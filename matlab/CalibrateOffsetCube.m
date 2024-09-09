@@ -19,8 +19,9 @@
 % Created by Andrew Schneider, June 27, 2024
 % Edited: Sep 2, 2024
 clear, clc, close all, format compact
+addpath('/Users/andrewschneider/Documents/3. Education/College/Research/multi_robot_calibration/robot_data/za_description/urdf')
 %% Robot 1 Import
-robot1 = importrobot('targetTest.urdf');
+robot1 = importrobot('za.urdf');
 config1 = homeConfiguration(robot1);
 config1(1).JointPosition = deg2rad(0);
 config1(2).JointPosition = deg2rad(21);
@@ -31,7 +32,7 @@ config1(6).JointPosition = deg2rad(0);
 
 %% Robot 2 Import
 
-robot2 = importrobot('targetTest.urdf');
+robot2 = importrobot('za.urdf');
 config2 = homeConfiguration(robot2);
 config2(1).JointPosition = deg2rad(0);
 config2(2).JointPosition = deg2rad(21);
@@ -180,11 +181,11 @@ W2 = [w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16, w17
 
 %% Use Function
 
-H_CMMB1 = Cmm2Robot(V1,W1,robot1,config1)
-H_CMMB2 = Cmm2Robot(V1,W2,robot2,config2)
+H_CMMB1 = Cmm2Robot(V1,W1,robot1,config1);
+H_CMMB2 = Cmm2Robot(V1,W2,robot2,config2);
 
 %% Find and convert to world between bots
-T_mid = [(H_CMMB1(1,4)+H_CMMB2(1,4))/2, (H_CMMB1(2,4)+H_CMMB2(2,4))/2,((H_CMMB1(3,4)+H_CMMB2(3,4))/2)+.5];
+T_mid = [(H_CMMB1(1,4)+H_CMMB2(1,4))/2, (H_CMMB1(2,4)+H_CMMB2(2,4))/2,((H_CMMB1(3,4)+H_CMMB2(3,4))/2)];
 H_CMMMid = [1 0 0 T_mid(1);
           0 1 0 T_mid(2);
           0 0 1 T_mid(3);
@@ -207,9 +208,9 @@ eul2 = flip(rad2deg(eul2))
 %% Plot Stuff!
 close all
 figure(1)
-show(robot1,config1,Frames="off",Position=[H_CMMB1(1,4) H_CMMB1(2,4) H_CMMB1(3,4) deg2rad(eul1(3))]);
+show(robot1,config1,Frames="on",Position=[H_CMMB1(1,4) H_CMMB1(2,4) H_CMMB1(3,4) deg2rad(eul1(3))]);
 hold on
-show(robot2,config2,Frames="off",Position=[H_CMMB2(1,4) H_CMMB2(2,4) H_CMMB2(3,4) deg2rad(eul2(3))]);
+show(robot2,config2,Frames="on",Position=[H_CMMB2(1,4) H_CMMB2(2,4) H_CMMB2(3,4) deg2rad(eul2(3))]);
 
 plot3([H_CMMB1(1,4) 0 H_CMMB2(1,4)],[H_CMMB1(2,4) 0 H_CMMB2(2,4)],[H_CMMB1(3,4) 0 H_CMMB2(3,4)],'-*r')
 % xlim([-1 1])
