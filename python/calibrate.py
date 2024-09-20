@@ -42,10 +42,6 @@ def get_data(tool_cloud_path, robot_cloud_path):
     W1 = W[:midpoint] / 1000
     W2 = W[midpoint:] / 1000
 
-    # Align coordinate points frame to urdf frame
-    T0 = SO3.RPY([np.pi, np.pi / 2, 0], order="xyz")
-    V = (T0 * V.T).T
-
     return (V, W1, W2)
 
 
@@ -71,7 +67,7 @@ def main():
     print(args.robot_cloud_path)
 
     # tool (V), robot1 (W1), and robot2 (W2) point clouds
-    V, W1, W2 = get_data(args.tool_cloud_path, args.robot_cloud_path)
+    V, W2, W1 = get_data(args.tool_cloud_path, args.robot_cloud_path)
 
     # create robot
     xacro_path = script_path + "/../robot_data/za_description/urdf/za.xacro"
@@ -82,14 +78,14 @@ def main():
     T_cmm_tool_rob2 = ls_registration(V, W2)
 
     # Transformation from CMM to base
-    q = np.deg2rad([0, 21, 45, 0, 360 - 66, 0])
+    q = np.deg2rad([0, 21, 45, 0, -66, 0])
     T_tool_base = robot.fkine(end="flange", q=q).inv()  # type: ignore
     T_cmm_base_rob1 = T_cmm_tool_rob1 * T_tool_base
     T_cmm_base_rob2 = T_cmm_tool_rob2 * T_tool_base
 
     # Construct world frame between robots
     t_cmm_world = 0.5 * (T_cmm_base_rob1.t + T_cmm_base_rob2.t)
-    T_cmm_world = SE3.Rt(SO3().Rz(-np.pi / 2), t_cmm_world)
+    T_cmm_world = SE3.Rt(SO3().Rz(np.pi / 2), t_cmm_world)
 
     # convert to world frame
     T_world_base_rob1 = T_cmm_world.inv() * T_cmm_base_rob1
@@ -101,6 +97,18 @@ def main():
     print(f"rob1 orientation (rpy): {T_world_base_rob1.rpy()}")
     print(f"rob2 translation: {T_world_base_rob2.t}")
     print(f"rob2 orientation (rpy): {T_world_base_rob2.rpy()}")
+
+    # reverse transformation (pathpilot input)
+    T_base_world_rob1 = T_world_base_rob1.inv()
+    T_base_world_rob2 = T_world_base_rob2.inv()
+
+    print(f"T_base_world_rob1:\n {T_base_world_rob1}")
+    print(f"T_base_world_rob2:\n {T_base_world_rob2}")
+
+    print(f"rob1 translation: {T_base_world_rob1.t * 1000}")
+    print(f"rob1 orientation (rpy): {np.rad2deg(T_base_world_rob1.rpy())}")
+    print(f"rob2 translation: {T_base_world_rob2.t * 1000}")
+    print(f"rob2 orientation (rpy): {np.rad2deg(T_base_world_rob2.rpy())}")
 
     # plot
     import matplotlib.pyplot as plt
