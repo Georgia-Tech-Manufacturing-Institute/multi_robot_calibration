@@ -53,7 +53,7 @@ def main():
     parser.add_argument(
         "-r",
         "--robot_cloud_path",
-        default=os.path.join(script_path, "../CMM_data/40PointCloudRaw/data.csv"),
+        default=os.path.join(script_path, "../CMM_data/40PointCloudRaw/robot_to_robot_091124.csv"),
         help="The path to the csv file containing the calibration point clouds for each robot",
     )
     parser.add_argument(
@@ -78,10 +78,14 @@ def main():
     T_cmm_tool_rob2 = ls_registration(V, W2)
 
     # Transformation from CMM to base
-    q = np.deg2rad([0, 21, 45, 0, -66, 0])
-    T_tool_base = robot.fkine(end="flange", q=q).inv()  # type: ignore
-    T_cmm_base_rob1 = T_cmm_tool_rob1 * T_tool_base
-    T_cmm_base_rob2 = T_cmm_tool_rob2 * T_tool_base
+    # q1 = np.deg2rad([0, 94.119, -6.812, 0, -87.307, 0])
+    # q2 = np.deg2rad([-11.278, 53.020, 17.195, -82.596, -122.65, 48.863])
+    q1 = np.deg2rad([0, 21, 45, 0, -66, 0])
+    q2 = np.deg2rad([0, 21, 45, 0, -66, 0])
+    T_tool_base_rob1 = robot.fkine(end="flange", q=q1).inv()  # type: ignore
+    T_tool_base_rob2 = robot.fkine(end="flange", q=q2).inv()  # type: ignore
+    T_cmm_base_rob1 = T_cmm_tool_rob1 * T_tool_base_rob1
+    T_cmm_base_rob2 = T_cmm_tool_rob2 * T_tool_base_rob2
 
     # Construct world frame between robots
     t_cmm_world = 0.5 * (T_cmm_base_rob1.t + T_cmm_base_rob2.t)
@@ -98,10 +102,13 @@ def main():
     print(f"rob2 translation: {T_world_base_rob2.t}")
     print(f"rob2 orientation (rpy): {T_world_base_rob2.rpy()}")
 
-    # reverse transformation (pathpilot input)
+    # base to base transformation
     T_base_world_rob1 = T_world_base_rob1.inv()
     T_base_world_rob2 = T_world_base_rob2.inv()
+    T_base_rob1_base_rob2 = T_base_world_rob1 * T_world_base_rob2
+    print(T_base_rob1_base_rob2)
 
+    # reverse transformation (pathpilot input)
     print(f"T_base_world_rob1:\n {T_base_world_rob1}")
     print(f"T_base_world_rob2:\n {T_base_world_rob2}")
 
