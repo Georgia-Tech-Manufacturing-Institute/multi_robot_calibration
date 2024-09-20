@@ -24,23 +24,23 @@ addpath('../CMM_data/40PointCloudRaw')
 %% Robot 1 Import
 robot1 = importrobot('za.urdf');
 config1 = homeConfiguration(robot1);
-config1(1).JointPosition = deg2rad(0);
-config1(2).JointPosition = deg2rad(94.119);
-config1(3).JointPosition = deg2rad(-6.812);
-config1(4).JointPosition = deg2rad(0);
-config1(5).JointPosition = deg2rad((-87.307));
-config1(6).JointPosition = deg2rad(0);
+config1(1).JointPosition = deg2rad(0.137);
+config1(2).JointPosition = deg2rad(38.415);
+config1(3).JointPosition = deg2rad(52.065);
+config1(4).JointPosition = deg2rad(1.298);
+config1(5).JointPosition = deg2rad(-90.610);
+config1(6).JointPosition = deg2rad(14.454);
 
 %% Robot 2 Import
 
 robot2 = importrobot('za.urdf');
 config2 = homeConfiguration(robot2);
-config2(1).JointPosition = deg2rad(-11.278);
-config2(2).JointPosition = deg2rad(53.020);
-config2(3).JointPosition = deg2rad(17.195);
-config2(4).JointPosition = deg2rad(-82.596);
-config2(5).JointPosition = deg2rad((-122.650));
-config2(6).JointPosition = deg2rad(48.863);
+config2(1).JointPosition = deg2rad(26.406);
+config2(2).JointPosition = deg2rad(23.369);
+config2(3).JointPosition = deg2rad(9.660);
+config2(4).JointPosition = deg2rad(105.939);
+config2(5).JointPosition = deg2rad(-67.422);
+config2(6).JointPosition = deg2rad(-35.926);
 
 %% Designed tool points
 %       X      Y      Z
@@ -124,9 +124,9 @@ V1 = V;
 % xlabel('X'), ylabel('Y'), zlabel('Z')
 % plot3([V(1,1)], [V(2,1)], [V(3,1)],'or')
 %% Data import from CMM
-cloud = readtable("data.csv");
+cloud = readtable("rob2_self_transform_092024.csv");
 n = 40;
-[W2,W1] = CMMCloudRead(cloud,n);
+[W1,W2] = CMMCloudRead(cloud,n);
 
 %% Use Function
 
@@ -157,6 +157,8 @@ T_B2M = H_B2M(1:3,4)*1000
 eul2 = rotm2eul(H_B2M(1:3,1:3));
 eul2 = flip(rad2deg(eul2))
 
+HB1B2 = H_B1M*inv(H_B2M)
+
 %% Plot Stuff!
 close all
 figure(1)
@@ -177,11 +179,5 @@ text(T_mid(1), T_mid(2), T_mid(3)+.075,'XY Midpoint')
 text(H_CMMB1(1,4)-.15, H_CMMB1(2,4)-.11,H_CMMB1(3,4)-.15,'Robot 1')
 text(H_CMMB2(1,4)-.15, H_CMMB2(2,4)-.11,H_CMMB2(3,4)-.15,'Robot 2')
 xlabel('X'), ylabel('Y'), zlabel('Z');
-%% Proofs Output
-T_CMMB1 = H_CMMB1(1:3,4)';
-T_CMMB2 = H_CMMB2(1:3,4)';
-T_MB1 = H_MB1(1:3,4)';
-T_MB2 = H_MB2(1:3,4)';
 
-HB1B2 = H_B1M*H_MB1
 
