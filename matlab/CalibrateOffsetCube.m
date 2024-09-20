@@ -25,22 +25,22 @@ addpath('../CMM_data/40PointCloudRaw')
 robot1 = importrobot('za.urdf');
 config1 = homeConfiguration(robot1);
 config1(1).JointPosition = deg2rad(0);
-config1(2).JointPosition = deg2rad(21);
-config1(3).JointPosition = deg2rad(45);
+config1(2).JointPosition = deg2rad(94.119);
+config1(3).JointPosition = deg2rad(-6.812);
 config1(4).JointPosition = deg2rad(0);
-config1(5).JointPosition = deg2rad((-66));
+config1(5).JointPosition = deg2rad((-87.307));
 config1(6).JointPosition = deg2rad(0);
 
 %% Robot 2 Import
 
 robot2 = importrobot('za.urdf');
 config2 = homeConfiguration(robot2);
-config2(1).JointPosition = deg2rad(0);
-config2(2).JointPosition = deg2rad(21);
-config2(3).JointPosition = deg2rad(45);
-config2(4).JointPosition = deg2rad(0);
-config2(5).JointPosition = deg2rad((-66));
-config2(6).JointPosition = deg2rad(0);
+config2(1).JointPosition = deg2rad(-11.278);
+config2(2).JointPosition = deg2rad(53.020);
+config2(3).JointPosition = deg2rad(17.195);
+config2(4).JointPosition = deg2rad(-82.596);
+config2(5).JointPosition = deg2rad((-122.650));
+config2(6).JointPosition = deg2rad(48.863);
 
 %% Designed tool points
 %       X      Y      Z
@@ -108,7 +108,7 @@ V =[v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, 
 % eul = [pi, pi/2, 0];
 % rotmXYZ = eul2rotm(eul,'XYZ');
 % V1 = rotmXYZ*V;
-V1 = V
+V1 = V;
 
 %% Process Check
 % Moves points to flange for qualitative check
@@ -143,7 +143,7 @@ H_CMMMid = [1 0 0 T_mid(1);
 eul_alex = [pi/2, 0, 0];
 alexrotm = eul2rotm(eul_alex,'ZYX');
 
-H_CMMMid(1:3,1:3) = alexrotm;
+% H_CMMMid(1:3,1:3) = alexrotm;
 
 H_MB1 = inv(H_CMMMid)*H_CMMB1;
 H_B1M = inv(H_MB1);
@@ -183,5 +183,5 @@ T_CMMB2 = H_CMMB2(1:3,4)';
 T_MB1 = H_MB1(1:3,4)';
 T_MB2 = H_MB2(1:3,4)';
 
-HB1B2 = H_B1M*H_MB1;
+HB1B2 = H_B1M*H_MB1
 
