@@ -15,6 +15,14 @@
 function [H_CMMBase] = Cmm2Robot(V,W,robot,config)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+% Inputs:
+%       V: Tool points in the J6 frame of the Tormach ZA6
+%       W: Tool points in the CMM frame
+%       robot: rigidBodyTree of the tormach ZA6, used for configurations
+%       config: joint angles of the given robot
+% Outputs:
+%       H_CMMBase: Homogeneous transformation matrix from the CMM to the
+%       Robot base
 %% Find Rigid Transformation matrix between tool and CMM
 % Cite: cs.hunter.edu/~ioannis/registerpts_allen_notes.pdf
 A = V; % tool data
@@ -23,7 +31,7 @@ B = W; % CMM data
 centroid_A = [mean([A(1,:)]); mean([A(2,:)]); mean([A(3,:)])]; % centroid of A
 centroid_B = [mean([B(1,:)]); mean([B(2,:)]); mean([B(3,:)])]; % cetroid of A
 
-H = (A-centroid_A)*transpose(B-centroid_B);
+H = (A-centroid_A)*transpose(B-centroid_B); % A,B Covariance Matrix
 
 [U,S,V] = svd(H);
 

@@ -135,23 +135,24 @@ H_CMMB2 = Cmm2Robot(V1,W2,robot2,config2);
 
 %% Find and convert to world between bots
 T_mid = [(H_CMMB1(1,4)+H_CMMB2(1,4))/2, (H_CMMB1(2,4)+H_CMMB2(2,4))/2,((H_CMMB1(3,4)+H_CMMB2(3,4))/2)];
-H_CMMMid = [1 0 0 T_mid(1);
+H_CMMMiddle = [1 0 0 T_mid(1);
           0 1 0 T_mid(2);
           0 0 1 T_mid(3);
           0 0 0     1   ;];
 
-eul_alex = [pi/2, 0, 0];
-alexrotm = eul2rotm(eul_alex,'ZYX');
 
+% alex output
+% eul_alex = [pi/2, 0, 0];
+% alexrotm = eul2rotm(eul_alex,'ZYX');
 % H_CMMMid(1:3,1:3) = alexrotm;
 
-H_MB1 = inv(H_CMMMid)*H_CMMB1;
+H_MB1 = inv(H_CMMMiddle)*H_CMMB1;
 H_B1M = inv(H_MB1);
 T_B1M = H_B1M(1:3,4)*1000
 eul1 = rotm2eul(H_B1M(1:3,1:3));
 eul1 = flip(rad2deg(eul1))
 
-H_MB2 = inv(H_CMMMid)*H_CMMB2;
+H_MB2 = inv(H_CMMMiddle)*H_CMMB2;
 H_B2M = inv(H_MB2);
 T_B2M = H_B2M(1:3,4)*1000
 eul2 = rotm2eul(H_B2M(1:3,1:3));
