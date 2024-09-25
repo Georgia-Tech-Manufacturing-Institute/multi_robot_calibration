@@ -44,3 +44,14 @@ options:
   -t TOOL_CLOUD_PATH, --tool_cloud_path TOOL_CLOUD_PATH
                         The path to the csv file containing the point cloud for the tool
 ```
+
+## Testing
+
+The Python library uses the [pytest](https://doc.pytest.org/en/latest/)
+framework. First, install the dependencies required by the tests. From the root
+directory of the repository,
+
+```
+pip install -r python/test-requirements.txt
+pytest
+```
