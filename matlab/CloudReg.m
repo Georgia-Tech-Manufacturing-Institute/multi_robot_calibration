@@ -12,7 +12,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function [H_CMMBase] = Cmm2Robot(V,W,robot,config)
+function [H_BA] = CloudReg(A,B)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % Inputs:
@@ -25,28 +25,26 @@ function [H_CMMBase] = Cmm2Robot(V,W,robot,config)
 %       Robot base
 %% Find Rigid Transformation matrix between tool and CMM
 % Cite: cs.hunter.edu/~ioannis/registerpts_allen_notes.pdf
-A = V; % tool data
-B = W; % CMM data
+% A = V; % tool data
+% B = W; % CMM data
 
 centroid_A = [mean([A(1,:)]); mean([A(2,:)]); mean([A(3,:)])]; % centroid of A
-centroid_B = [mean([B(1,:)]); mean([B(2,:)]); mean([B(3,:)])]; % cetroid of A
+centroid_B = [mean([B(1,:)]); mean([B(2,:)]); mean([B(3,:)])]; % cetroid of B
 
 H = (A-centroid_A)*transpose(B-centroid_B); % A,B Covariance Matrix
 
 [U,S,V] = svd(H);
 
-R_AB = V*transpose(U);
+R_BA = V*transpose(U);
 
 % account for special reflection Citation: nghiaho.com Finding optimal
 % Rotation and Translation Between Corresponding 3D points
-if det(R_AB) < 0
+if det(R_BA) < 0
     [U,S,V] = svd(H);
     V(1:3,3) = V(1:3,3)*-1;
-    R_AB = V*transpose(U);
+    R_BA = V*transpose(U);
 end
-t_AB = centroid_B - R_AB*centroid_A;
+t_BA = centroid_B - R_BA*centroid_A;
 
-H_J6CMM = [R_AB, t_AB; 0, 0, 0, 1];
-
-H_CMMBase = H_J6CMM*getTransform(robot,config,"base","link_6");
+H_BA = [R_BA, t_BA; 0, 0, 0, 1];
 end
