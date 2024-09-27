@@ -2,30 +2,26 @@ import unittest
 
 import os
 import numpy as np
-import pandas as pd
+import numpy.testing as nt
 
 from roboticstoolbox import Robot
 from spatialmath import SO3, SE3
 
-from mr_calibration.core import ls_registration
-
-
-def parse_data(data_path):
-    """Returns averaged point cloud"""
-    data = pd.read_csv(data_path)
-    points_avg = data.groupby("Element Name")[
-        ["MX Coord.", "MY Coord.", "MZ Coord."]
-    ].mean()
-    return np.array(points_avg.values)
+from mr_calibration.geometry import (
+    ls_registration,
+    three_point_circle,
+    line_intersection,
+)
+from mr_calibration.keyence_cmm import read_point_cloud
 
 
 def get_data(tool_cloud_path, robot_cloud_path):
     # Designed points in tool frame
-    V = parse_data(tool_cloud_path)
+    V = read_point_cloud(tool_cloud_path)
     V /= 1000
 
     # Robot Measurement Points, output of CMM
-    W = parse_data(robot_cloud_path)
+    W = read_point_cloud(robot_cloud_path)
     midpoint = len(W) // 2
     W1 = W[:midpoint] / 1000
     W2 = W[midpoint:] / 1000
@@ -34,23 +30,6 @@ def get_data(tool_cloud_path, robot_cloud_path):
 
 
 class TestCalibration(unittest.TestCase):
-    def test_ls_registration(self):
-        A = np.array(
-            [
-                [0.3, 0.2, 0.4],
-                [5.0, 5.4, 13.2],
-                [4.5, 67.3, 22.0],
-                [56.9, 64.0, 5.0],
-                [76.0, 3.0, 43.0],
-                [17.4, 51.3, 4.2],
-            ]
-        )
-        T = SE3.Rt(SO3.Ry(0.314), [0.1, 4.0, -3.2])
-        B = (T * A.T).T
-
-        T_approx = ls_registration(A, B)
-        self.assertEqual(T_approx, T)
-
     def test_calibration(self):
         """
         Fake world configuration:
@@ -92,6 +71,44 @@ class TestCalibration(unittest.TestCase):
         T_base_rob1_base_rob2_gt = SE3.Rt(SO3.Rz(np.pi), [2 * radius, 0, 0])
 
         self.assertEqual(T_base_rob1_base_rob2_gt, T_base_rob1_base_rob2)
+
+
+class TestGeometry(unittest.TestCase):
+    def test_ls_registration(self):
+        A = np.array(
+            [
+                [0.3, 0.2, 0.4],
+                [5.0, 5.4, 13.2],
+                [4.5, 67.3, 22.0],
+                [56.9, 64.0, 5.0],
+                [76.0, 3.0, 43.0],
+                [17.4, 51.3, 4.2],
+            ]
+        )
+        T = SE3.Rt(SO3.Ry(0.314), [0.1, 4.0, -3.2])
+        B = (T * A.T).T
+
+        T_approx = ls_registration(A, B)
+        self.assertEqual(T_approx, T)
+
+    def test_line_intersection(self):
+        p0 = np.array([-1.0, 0.0, 0.0])
+        v0 = np.array([1.0, 0.0, 0.0])
+        p1 = np.array([0.0, 1.0, 0.0])
+        v1 = np.array([0.0, -1.0, 0.0])
+
+        inter = line_intersection(p0, v0, p1, v1)
+        nt.assert_array_equal([0.0, 0.0, 0.0], inter)
+
+    def test_three_point_circle(self):
+        p1 = np.array([0, 1, 0])
+        p2 = np.array([1, 0, 0])
+        p3 = np.array([-1, 0, 0])
+
+        c, r = three_point_circle(p1, p2, p3)
+
+        nt.assert_array_almost_equal([0.0, 0.0, 0.0], c)
+        self.assertAlmostEqual(r, 1.0)  # type: ignore
 
 
 if __name__ == "__main__":

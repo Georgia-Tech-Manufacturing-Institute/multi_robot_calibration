@@ -53,7 +53,9 @@ def main():
     parser.add_argument(
         "-r",
         "--robot_cloud_path",
-        default=os.path.join(script_path, "../CMM_data/40PointCloudRaw/robot_to_robot_091124.csv"),
+        default=os.path.join(
+            script_path, "../CMM_data/40PointCloudRaw/rob2_self_transform_092024.csv"
+        ),
         help="The path to the csv file containing the calibration point clouds for each robot",
     )
     parser.add_argument(
@@ -67,7 +69,7 @@ def main():
     print(args.robot_cloud_path)
 
     # tool (V), robot1 (W1), and robot2 (W2) point clouds
-    V, W2, W1 = get_data(args.tool_cloud_path, args.robot_cloud_path)
+    V, W1, W2 = get_data(args.tool_cloud_path, args.robot_cloud_path)
 
     # create robot
     xacro_path = script_path + "/../robot_data/za_description/urdf/za.xacro"
@@ -78,14 +80,27 @@ def main():
     T_cmm_tool_rob2 = ls_registration(V, W2)
 
     # Transformation from CMM to base
+    # rob1_self_transform_092024.csv
     # q1 = np.deg2rad([0, 94.119, -6.812, 0, -87.307, 0])
     # q2 = np.deg2rad([-11.278, 53.020, 17.195, -82.596, -122.65, 48.863])
-    q1 = np.deg2rad([0, 21, 45, 0, -66, 0])
-    q2 = np.deg2rad([0, 21, 45, 0, -66, 0])
+
+    # rob2_self_transform_092024.csv
+    q1 = np.deg2rad([0.137, 38.415, 52.065, 1.298, -90.610, 14.454])
+    q2 = np.deg2rad([26.406, 23.369, 9.66, 105.939, -67.422, -35.926])
+
+    # robot_to_robot_091124.csv
+    # q1 = np.deg2rad([0, 21, 45, 0, -66, 0])
+    # q2 = np.deg2rad([0, 21, 45, 0, -66, 0])
     T_tool_base_rob1 = robot.fkine(end="flange", q=q1).inv()  # type: ignore
     T_tool_base_rob2 = robot.fkine(end="flange", q=q2).inv()  # type: ignore
     T_cmm_base_rob1 = T_cmm_tool_rob1 * T_tool_base_rob1
     T_cmm_base_rob2 = T_cmm_tool_rob2 * T_tool_base_rob2
+
+    # base to base transformation
+    T_base_rob1_base_rob2 = T_cmm_base_rob1.inv() * T_cmm_base_rob2
+    print("============ Base to Base Transformation ============")
+    print(f"T_base_rob1_base_rob2:\n {T_base_rob1_base_rob2}")
+    print(f"Origin distance (mm): {np.linalg.norm(T_base_rob1_base_rob2.t) * 1000}\n")
 
     # Construct world frame between robots
     t_cmm_world = 0.5 * (T_cmm_base_rob1.t + T_cmm_base_rob2.t)
@@ -94,27 +109,27 @@ def main():
     # convert to world frame
     T_world_base_rob1 = T_cmm_world.inv() * T_cmm_base_rob1
     T_world_base_rob2 = T_cmm_world.inv() * T_cmm_base_rob2
+
+    print("============ World to Base Transformations ============")
     print(f"T_world_base_rob1:\n {T_world_base_rob1}")
     print(f"T_world_base_rob2:\n {T_world_base_rob2}")
 
-    print(f"rob1 translation: {T_world_base_rob1.t}")
+    print(f"rob1 translation (mm): {T_world_base_rob1.t}")
     print(f"rob1 orientation (rpy): {T_world_base_rob1.rpy()}")
-    print(f"rob2 translation: {T_world_base_rob2.t}")
-    print(f"rob2 orientation (rpy): {T_world_base_rob2.rpy()}")
-
-    # base to base transformation
-    T_base_world_rob1 = T_world_base_rob1.inv()
-    T_base_world_rob2 = T_world_base_rob2.inv()
-    T_base_rob1_base_rob2 = T_base_world_rob1 * T_world_base_rob2
-    print(T_base_rob1_base_rob2)
+    print(f"rob2 translation (mm): {T_world_base_rob2.t}")
+    print(f"rob2 orientation (rpy): {T_world_base_rob2.rpy()}\n")
 
     # reverse transformation (pathpilot input)
+    T_base_world_rob1 = T_world_base_rob1.inv()
+    T_base_world_rob2 = T_world_base_rob2.inv()
+
+    print("============ Base to World Transformations ============")
     print(f"T_base_world_rob1:\n {T_base_world_rob1}")
     print(f"T_base_world_rob2:\n {T_base_world_rob2}")
 
-    print(f"rob1 translation: {T_base_world_rob1.t * 1000}")
+    print(f"rob1 translation (mm): {T_base_world_rob1.t * 1000}")
     print(f"rob1 orientation (rpy): {np.rad2deg(T_base_world_rob1.rpy())}")
-    print(f"rob2 translation: {T_base_world_rob2.t * 1000}")
+    print(f"rob2 translation (mm): {T_base_world_rob2.t * 1000}")
     print(f"rob2 orientation (rpy): {np.rad2deg(T_base_world_rob2.rpy())}")
 
     # plot
@@ -122,6 +137,7 @@ def main():
 
     T_world_base_rob1.plot(frame="B1")
     T_world_base_rob2.plot(frame="B2")
+    plt.gca().set_aspect("equal")
     plt.show()
 
 

@@ -13,53 +13,27 @@
 # limitations under the License.
 
 import numpy as np
+
+from roboticstoolbox import Robot
 from spatialmath import SO3, SE3
 
-
-def ls_registration(points_A, points_B, thresh=1e-2):
-    """
-    Least-squares registration of point sets
-
-    Find the transformation matrix that transforms the set of points `points_A`
-    to `points_B` with the least-square error. There should be at least 6 points
-    in each set.
-
-    Parameters
-    ----------
-    points_A : array_like
-        The first list of points (Nx3)
-    points_B : array_like
-        The second list of points (Nx3)
-    thresh : float
-        The maximum allowed deviation from 1 for the determinate of the rotation
-        matrix.
-
-    Returns
-    -------
-    transform : ndarray
-        The homogeneous transformation that transforms points in points_A to
-        points_B
-
-    Raises
-    ------
-    ValueError
-        When the determinate of the rotation matrix is farther than `thresh`
-        from 1
-    """
-    centroid_A = np.mean(points_A, axis=0)
-    centroid_B = np.mean(points_B, axis=0)
-
-    H = (points_A - centroid_A).T @ (points_B - centroid_B)
-    U, _, V = np.linalg.svd(H)
-
-    R = V.T @ U.T
-    if np.abs(1 - np.linalg.det(R)) > thresh:
-        raise ValueError("Determinate threshold exceeded")
-
-    transform = SE3.Rt(SO3(R), centroid_B - R @ centroid_A)
-    return transform
+from mr_calibration.geometry import ls_registration
 
 
-def normalize(vec):
-    """Returns the unit magnitude vector in the direction of vec"""
-    return vec / np.linalg.norm(vec)
+def calibrate_to_world(
+    tool_cloud, robot_clouds, robot_configs, tool_frames, xacro_path
+):
+    # read robot (for now we assume all robots are identical)
+    robot = Robot.URDF(xacro_path)
+
+    # transformations from CMM to tool
+    T_cmm_tool = []
+    for i, r_cloud in enumerate(robot_clouds):
+        try:
+            T_cmm_tool_r = ls_registration(tool_cloud, r_cloud)
+            T_cmm_tool.append(T_cmm_tool_r)
+        except ValueError:
+            print(f"Invalid point cloud registration for robot {i}")
+            return None
+
+    # transformations from CMM to base
