@@ -18,10 +18,11 @@
 % CMM for 2 robots
 % Created by Andrew Schneider, June 27, 2024
 % Edited: Sep 2, 2024
-clear, clc, close all, format compact
+clear, clc, close all, format compact, format default
 addpath('../robot_data/za_description/urdf')
 addpath('../CMM_data/40PointCloudRaw')
 addpath('../CMM_data/ToolCloud')
+robot = importrobot('za2.urdf');
 
 %% Select data set
 addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/robot_calib_data_926')
@@ -34,12 +35,12 @@ q2 = deg2rad(q2);
 
 
 %% Configure Robot 1  
-robot1 = importrobot('za.urdf');
+robot1 = robot;
 config1 = homeConfiguration(robot1);
 [config1.JointPosition] = deal([q1(1)],[q1(2)],[q1(3)],[q1(4)],[q1(5)],[q1(6)]);
 
 %% Configure Robot 2 
-robot2 = importrobot('za.urdf');
+robot2 = robot;
 config2 = homeConfiguration(robot2);
 [config2.JointPosition] = deal([q2(1)],[q2(2)],[q2(3)],[q2(4)],[q2(5)],[q2(6)]);
 
@@ -81,7 +82,7 @@ H_CMMB1 = H_CMMJ61*H_J6Base1;
 H_CMMJ62 = CloudReg(V1_J6,W2_CMM); % rad, m
 H_CMMB2 = H_CMMJ62*H_J6Base2;
 
-H_B1B2 = inv(H_CMMB1)*H_CMMB2;
+H_B1B2 = inv(H_CMMB1)*H_CMMB2
 
 % H_W1W2 = CloudReg(W2_CMM,W1_CMM);
 %% Find and Convert to Frame at Midpoint Between Arms
