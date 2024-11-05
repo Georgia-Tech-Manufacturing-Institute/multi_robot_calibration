@@ -16,45 +16,53 @@ function [c] = centroidCost(init)
 %UNTITLED7 Summary of this function goes here
 %   Detailed explanation goes here
 
-addpath('../robot_data/za_description/urdf')
-addpath('../CMM_data/40PointCloudRaw')
-addpath('../CMM_data/ToolCloud')
-addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/robot_calib_data_925')
-cloud = readtable("rob1_self_transform_092524_2.csv", "VariableNamingRule","preserve");
+%% Real Data
+% addpath('../robot_data/za_description/urdf')
+% addpath('../CMM_data/40PointCloudRaw')
+% addpath('../CMM_data/ToolCloud')
+% addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/rob1_kinematic_optimization_104')
+% % 
+% 
+% % Joint Angles
+% q(1,:) = [0, 45, 30, 0, -75, 0];
+% q(2,:) = [25, 65, 30, 60, -65, 0];
+% q(3,:) = [1.141, 35.480, 19.738, -84.379, -45.001, 40.004];
+% q(4,:) = [-10.377, 121.931, -114.019, -45.710, -64.364, 20.006];
+% q(5,:) = [50, 25, 50, 75, -65, 70];
+% q(6,:) = [-25, 35, 40, -50, -112, 140];
+% q(7,:) = [40, 35, 40, 85, -30, 150];
+% q(8,:) = [165, -99, -70, 85, -118, 5];
+% q(9,:) = [-7, 15, 60, -20, -55, -60];
+% q(10,:) = [-15, 45, 20, 120, 100, 11];
+% q(11,:) = [15, 45, 20, 170, 60, 88];
+% 
+% q = deg2rad(q);
+% 
+% % Measured CMM Points
+% id = ["Rob1V1.csv";"Rob1V2.csv";"Rob1V3.csv";"Rob1V4.csv";"Rob1V5.csv";"Rob1V6.csv";"Rob1V7.csv";"Rob1V8.csv";"Rob1V9.csv";"Rob1V10.csv";"Rob1V11.csv"];
+% 
+% for i = 1:1:length(id)
+%     W_CMM(:,:,i) = CMMCloudRead(readtable(id(i), "VariableNamingRule","preserve"))./1000;
+% end
 
-q1 = [0, 21, 45, 0, -66, 0];
-q2 = [-15, 50, 30, 80, 90, -180];
+%% Simulated data
+load("q.mat"), load("W.mat")
 
-q1 = deg2rad(q1);
-q2 = deg2rad(q2);
-
-%% Measured CMM Points
-n = 40;
-[W1_CMM,W2_CMM] = CMMCloudRead(cloud,n);
 %% Designed tool points
 % 3x20 tool frame coords
 tool_cloud = readtable("tool_cloud.csv", "VariableNamingRule","preserve");
 V1_J6 = transpose(tool_cloud{:,4:6}/1000);
-
-%% Configure Robot 1  
-robot1 = buildRobot(init);
-config1 = homeConfiguration(robot1);
-[config1.JointPosition] = deal([q1(1)],[q1(2)],[q1(3)],[q1(4)],[q1(5)],[q1(6)]);
-
-%% Configure Robot 2 
-robot2 = buildRobot(init);
-config2 = homeConfiguration(robot2);
-[config2.JointPosition] = deal([q2(1)],[q2(2)],[q2(3)],[q2(4)],[q2(5)],[q2(6)]);
-
-%% Find base transforms
-H_CMMJ61 = CloudReg(V1_J6,W1_CMM); % rad, m
-H_J6Base1 = getTransform(robot1,config1,"base","link_6");
-H_CMMB1 = H_CMMJ61*H_J6Base1;
-
-H_CMMJ62 = CloudReg(V1_J6,W2_CMM); % rad, m
-H_J6Base2 = getTransform(robot2,config2,"base","link_6");
-H_CMMB2 = H_CMMJ62*H_J6Base2;
+%% Test environ
+for i = 1:1:height(q)
+    H_CMMJ6.A{i} = se3(CloudReg(V1_J6,W_CMM(:,:,i)));
+    H_J6Base.A{i} = buildRobot(init,q(i,:));
+    H_CMMB.A{i} = H_CMMJ6.A{i}*H_J6Base.A{i};
+    t(i,:) = trvec(H_CMMB.A{i});
+end
 
 %% Cost function
-c = norm(H_CMMB1(1:3,4)-H_CMMB2(1:3,4));
+t_mean = mean(t);
+cost_t = t_mean-t;
+c = norm(vecnorm(transpose(cost_t)));
+
 end
