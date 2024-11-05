@@ -12,22 +12,44 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 %% Start
-
 clear, clc, close all, format short g, format compact
-addpath('../robot_data/za_description/urdf')
-addpath('../CMM_data/40PointCloudRaw')
-addpath('../CMM_data/ToolCloud')
-addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/subchain_self_transformations/rob1_j6')
+%% Fminsearch
+% % init = [.45, .025, -.001, .454, .035, .4195, .001, .1175];
+% init = [0, 0, .45, .025, 0, 0, 0, -.001, .454, 0, 0, .035, .4195, .001, 0, .1175, 0, 0];
+% init_g = init-0.001;
+% 
+% fun = @centroidCost;
+% options = optimset('Display','iter','PlotFcns',@optimplotfval,'TolFun', 1.e-12);
+% [x,fval,exitflag,output] = fminsearch(fun,init_g,options);
+% init
+% x
 
-%% Function
-init = [.45, .025, -.001, .454, .035, .4195, .001, .1175];
+%% Particle Swarm
+% init = [0, 0, .45, .025, 0, 0, 0, -.001, .454, 0, 0, .035, .4195, .001, 0, .1175, 0, 0];
+% init = init-.001;
+% lb = init-.005;
+% ub = init+.005;
+% 
+% fun = @centroidCost;
+% nvars = length(init);
+% 
+% options = optimoptions('particleswarm','Display','iter','PlotFcn', 'pswplotbestf','UseParallel',true);
+% 
+% [x,fval,exitflag,output,points] = particleswarm(fun,nvars,lb,ub,options);
+% init
+% x
+%% FminCon
+init = [0, 0, .45, .025, 0, 0, 0, -.001, .454, 0, 0, .035, .4195, .001, 0, .1175, 0, 0];
+init_true = init+.0015;
+lb = init-.005;
+ub = init+.005;
+% https://pmc.ncbi.nlm.nih.gov/articles/PMC5059574/ upper/lower bound
+% selection citation
 
 fun = @centroidCost;
-options = optimset('Display','iter','PlotFcns',@optimplotfval);
-[x,fval,exitflag,output] = fminsearch(fun,init,options)
-link_1 = [0, 0, x(1)]
-link_2 = [x(2), 0, 0]
-link_3 = [0, x(3), x(4)]
-link_4 = [0, 0, x(5)]
-link_5 = [x(6), x(7), 0]
-link_6 = [x(8), 0, 0]
+options = optimoptions('fmincon','Display','iter','PlotFcn','optimplot','UseParallel',false,'ObjectiveLimit',1e-12,'OptimalityTolerance',1e-12,'StepTolerance',1e-30);
+x = fmincon(fun,init,[],[],[],[],lb,ub,[],options);
+init_true
+x
+
+save("linkLengths.mat","x")
