@@ -18,27 +18,35 @@
 % CMM for 2 robots
 % Created by Andrew Schneider, June 27, 2024
 % Edited: Sep 2, 2024
-clear, clc, close all, format compact, format default
+clear, clc, close all, format compact, format long g
 addpath('../robot_data/za_description/urdf')
 addpath('../CMM_data/40PointCloudRaw')
 addpath('../CMM_data/ToolCloud')
-robot = importrobot('za2.urdf');
+
+addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/robot_calib_data_926')
+cloud = readtable("rob2_self_transform_092624.csv", "VariableNamingRule","preserve");
+
+robot = importrobot('za.urdf');
+load("q.mat"), load("W.mat")
+
 
 %% Select data set
-addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/robot_calib_data_926')
-% Rob1 to Rob2
-q1 = [0, 21, 45, 0, -66, 0];
-q2 = [15, 50, 30, -80, 90, -180];
 
-q1 = deg2rad(q1);
-q2 = deg2rad(q2);
+% Rob1 to Rob2
+% q1 = [0, 21, 45, 0, -66, 0];
+% q2 = [15, 50, 30, -80, 90, -180];
+% 
+% q1 = deg2rad(q1);
+% q2 = deg2rad(q2);
+
+q1 = q(1,:);
+q2 = q(2,:);
 
 
 %% Configure Robot 1  
 robot1 = robot;
 config1 = homeConfiguration(robot1);
 [config1.JointPosition] = deal([q1(1)],[q1(2)],[q1(3)],[q1(4)],[q1(5)],[q1(6)]);
-
 %% Configure Robot 2 
 robot2 = robot;
 config2 = homeConfiguration(robot2);
@@ -50,29 +58,19 @@ tool_cloud = readtable("tool_cloud.csv", "VariableNamingRule","preserve");
 V1_J6 = transpose(tool_cloud{:,4:6}/1000);
 
 %% Data import from CMM
-cloud = readtable("rob2_self_transform_092624.csv", "VariableNamingRule","preserve");
 n = 40;
-[W1_CMM,W2_CMM] = CMMCloudRead(cloud,n);
+W = CMMCloudRead(cloud);
+% confirm simulated dataset
+W = [W_CMM(:,:,1),W_CMM(:,:,2)]*1000;
+
+W1_CMM = [W(:,1:n/2)]/1000;
+W2_CMM = [W(:,n/2+1:n)]/1000;
+
+
 
 %% Bases expressed in Flange Frames
-H_J6Base1 = getTransform(robot1,config1,"base","flange");
-H_J6Base2 = getTransform(robot2,config2,"base","flange");
-
-%% MatLab Image Toolbox Point Registration, not working for W2's no clue why
-% V1_J6_cloud = pointCloud(transpose(V1_J6));
-% W1_CMM_cloud = pointCloud(transpose(W1_CMM));
-% W2_CMM_cloud = pointCloud(transpose(W2_CMM));
-% 
-% H_CMMJ6_cloud1 = invert(pcregistericp(W1_CMM_cloud,V1_J6_cloud));
-% H_CMMB1 = H_CMMJ6_cloud1.A*H_J6Base1; % rad, m
-% 
-% H_CMMJ6_cloud2 = invert(pcregistericp(W2_CMM_cloud,V1_J6_cloud));
-% H_CMMB2 = H_CMMJ6_cloud2.A*H_J6Base2; % rad, m
-% 
-% H_B1B2 = inv(H_CMMB1)*H_CMMB2;
-
-% H_W1W2 = invert(pcregistericp(W1_CMM_cloud,W2_CMM_cloud));
-
+H_J6Base1 = getTransform(robot1,config1,"base","link_6");
+H_J6Base2 = getTransform(robot2,config2,"base","link_6");
 
 %% SVD Function Point Registration
 
@@ -82,9 +80,11 @@ H_CMMB1 = H_CMMJ61*H_J6Base1;
 H_CMMJ62 = CloudReg(V1_J6,W2_CMM); % rad, m
 H_CMMB2 = H_CMMJ62*H_J6Base2;
 
-H_B1B2 = inv(H_CMMB1)*H_CMMB2
+H_B1B2 = inv(H_CMMB1)*H_CMMB2;
 
-% H_W1W2 = CloudReg(W2_CMM,W1_CMM);
+T_B1B2 = norm(H_B1B2(1:3,4))*1000;
+
+% H_W1W2 = CloudReg(W2_CMM,W1_CMM)
 %% Find and Convert to Frame at Midpoint Between Arms
 T_CMMMiddle = [(H_CMMB1(1,4)+H_CMMB2(1,4))/2, (H_CMMB1(2,4)+H_CMMB2(2,4))/2,((H_CMMB1(3,4)+H_CMMB2(3,4))/2)];
 H_CMMMiddle = [1 0 0 T_CMMMiddle(1);
