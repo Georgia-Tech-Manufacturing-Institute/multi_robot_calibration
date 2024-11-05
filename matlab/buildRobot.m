@@ -1,58 +1,48 @@
-function [robot] = buildRobot(init)
-    [l1z,l2x,l3y,l3z,l4z,l5x,l5y,l6x] = deal([init(1)],[init(2)],[init(3)],[init(4)],[init(5)],[init(6)],[init(7)],[init(8)]);
-    robot = rigidBodyTree;
+% Copyright 2024 Andrew Schneider, Alex Arbogast
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%     http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
+%% Testing environement, quick robot transforms
+function [H60,H56,H45,H34,H23,H12,H01] = buildRobot(init,q)
+    % Assume errors may exist only where manufacturer states explicit
+    % offsets exist
+    % t1 = [0, 0, init(1)];
+    % t2 = [init(2), 0, 0];
+    % t3 = [0, init(3), init(4)];
+    % t4 = [0, 0, init(5)];
+    % t5 = [init(6), init(7), 0];
+    % t6 = [init(8), 0, 0];
+    % Assume errors may exist everywhere
+    t1 = [init(1), init(2), init(3)];
+    t2 = [init(4), init(5), init(6)];
+    t3 = [init(7), init(8), init(9)];
+    t4 = [init(10), init(11), init(12)];
+    t5 = [init(13), init(14), init(15)];
+    t6 = [init(16), init(17), init(18)];
     
-    link_1 = rigidBody('link_1');
-    jnt1 = rigidBodyJoint('jnt1','revolute');
-    jnt1.HomePosition = 0;
-    jnt1.JointAxis = [0, 0, 1];
-    tform1 = trvec2tform([0, 0, l1z]); % User defined
-    setFixedTransform(jnt1,tform1);
-    link_1.Joint = jnt1;
-    addBody(robot,link_1,'base') % Add link_1 to base
+    eul1 = [0, 0, q(1)];
+    eul2 = [0, q(2), 0];
+    eul3 = [0, q(3), 0];
+    eul4 = [q(4), 0, 0];
+    eul5 = [0, q(5), 0];
+    eul6 = [q(6), 0, 0];
     
-    link_2 = rigidBody('link_2');
-    jnt2 = rigidBodyJoint('jnt2','revolute');
-    jnt2.HomePosition = 0; % User defined
-    jnt2.JointAxis = [0, 1, 0];
-    tform2 = trvec2tform([l2x, 0, 0]); % User defined
-    setFixedTransform(jnt2,tform2);
-    link_2.Joint = jnt2;
-    addBody(robot,link_2,'link_1'); % Add link_2 to link_1
+    H01 = se3(eul1,"eul","XYZ",t1);
+    H12 = se3(eul2,"eul","XYZ",t2);
+    H23 = se3(eul3,"eul","XYZ",t3);
+    H34 = se3(eul4,"eul","XYZ",t4);
+    H45 = se3(eul5,"eul","XYZ",t5);
+    H56 = se3(eul6,"eul","XYZ",t6);
     
-    link_3 = rigidBody('link_3');
-    jnt3 = rigidBodyJoint('jnt3','revolute');
-    jnt3.HomePosition = 0; % User defined
-    jnt3.JointAxis = [0, 1, 0];
-    tform3 = trvec2tform([0, l3y, l3z]); % User defined
-    setFixedTransform(jnt3,tform3);
-    link_3.Joint = jnt3;
-    addBody(robot,link_3,'link_2'); % Add link_3 to link_2
-    
-    link_4 = rigidBody('link_4');
-    jnt4 = rigidBodyJoint('jnt4','revolute');
-    jnt4.HomePosition = 0; % User defined
-    jnt4.JointAxis = [1, 0, 0];
-    tform4 = trvec2tform([0, 0, l4z]); % User defined
-    setFixedTransform(jnt4,tform4);
-    link_4.Joint = jnt4;
-    addBody(robot,link_4,'link_3'); % Add link_4 to link_3
-    
-    link_5 = rigidBody('link_5');
-    jnt5 = rigidBodyJoint('jnt5','revolute');
-    jnt5.HomePosition = 0; % User defined
-    jnt5.JointAxis = [0, 1, 0];
-    tform5 = trvec2tform([l5x, l5y, 0]); % User defined
-    setFixedTransform(jnt5,tform5);
-    link_5.Joint = jnt5;
-    addBody(robot,link_5,'link_4'); % Add link_5 to link_4
-    
-    link_6 = rigidBody('link_6');
-    jnt6 = rigidBodyJoint('jnt6','revolute');
-    jnt6.HomePosition = 0; % User defined
-    jnt6.JointAxis = [1, 0, 0];
-    tform6 = trvec2tform([l6x, 0, 0]); % User defined
-    setFixedTransform(jnt6,tform6);
-    link_6.Joint = jnt6;
-    addBody(robot,link_6,'link_5'); % Add link_6 to link_5
+    H60 = inv(H01*H12*H23*H34*H45*H56);
+
 end
