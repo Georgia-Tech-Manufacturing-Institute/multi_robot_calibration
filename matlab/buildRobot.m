@@ -12,7 +12,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 %% Testing environement, quick robot transforms
-function [H60,H56,H45,H34,H23,H12,H01] = buildRobot(init,q)
+function [H60] = buildRobot(init,q)
     % Assume errors may exist only where manufacturer states explicit
     % offsets exist
     % t1 = [0, 0, init(1)];
