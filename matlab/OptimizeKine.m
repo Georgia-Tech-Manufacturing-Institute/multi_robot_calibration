@@ -13,6 +13,32 @@
 % limitations under the License.
 %% Start
 clear, clc, close all, format short g, format compact
+% build robot test environment
+init = [0, 0, .45, .025, 0, 0, 0, -.001, .454, 0, 0, .035, .4195, .001, 0, .1175, 0, 0];
+q = [0,0,0,0,0,0];
+[H60] = buildRobot(init,q)
+
+% dh params in 
+%     alpha,   a, theta,     d
+dh = [-pi/2,  25,     0,   450;
+          0, 454, -pi/2,    -1;
+      -pi/2,  35,     0,     0;
+       pi/2,   0,     0, 419.5;
+      -pi/2,   0,     0,     1;
+          0,   0,     0, 117.5;];
+
+mdh = [    0,   0,     0,   450;
+      -pi/2,  25, -pi/2,     0;
+          0, 454,     0,    -1;
+      -pi/2,  35,     0, 419.5;
+       pi/2,   0,     0,     1;
+      -pi/2,   0      0, 117.5;];
+
+[H60] = buildRobotDH(dh,q)
+
+
+
+
 %% Fminsearch
 % % init = [.45, .025, -.001, .454, .035, .4195, .001, .1175];
 % init = [0, 0, .45, .025, 0, 0, 0, -.001, .454, 0, 0, .035, .4195, .001, 0, .1175, 0, 0];
