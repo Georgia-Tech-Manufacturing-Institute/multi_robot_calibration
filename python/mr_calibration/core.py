@@ -12,28 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-
-from roboticstoolbox import Robot
-from spatialmath import SO3, SE3
 
 from mr_calibration.geometry import ls_registration
 
 
-def calibrate_to_world(
-    tool_cloud, robot_clouds, robot_configs, tool_frames, xacro_path
-):
-    # read robot (for now we assume all robots are identical)
-    robot = Robot.URDF(xacro_path)
+def calibrate(tool_cloud, robot_clouds, robot_configs, robot):
+    if len(robot_clouds) != len(robot_configs):
+        raise ValueError("Mismatch in length of point cloud and configuration arrays")
 
-    # transformations from CMM to tool
-    T_cmm_tool = []
-    for i, r_cloud in enumerate(robot_clouds):
+    # transformations from CMM to base
+    T_cmm_base = []
+    for i in range(len(robot_clouds)):
         try:
-            T_cmm_tool_r = ls_registration(tool_cloud, r_cloud)
-            T_cmm_tool.append(T_cmm_tool_r)
+            T_cmm_tool_r = ls_registration(tool_cloud, robot_clouds[i])
         except ValueError:
             print(f"Invalid point cloud registration for robot {i}")
             return None
 
-    # transformations from CMM to base
+        T_tool_base_r = robot.fk(robot_configs[i]).inv()
+        T_cmm_base_r = T_cmm_tool_r * T_tool_base_r
+        T_cmm_base.append(T_cmm_base_r)
+
+    return T_cmm_base
