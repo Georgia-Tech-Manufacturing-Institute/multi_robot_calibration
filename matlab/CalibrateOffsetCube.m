@@ -33,14 +33,14 @@ load("q.mat"), load("W.mat")
 %% Select data set
 
 % Rob1 to Rob2
-% q1 = [0, 21, 45, 0, -66, 0];
-% q2 = [15, 50, 30, -80, 90, -180];
-% 
-% q1 = deg2rad(q1);
-% q2 = deg2rad(q2);
+q1 = [0, 21, 45, 0, -66, 0];
+q2 = [15, 50, 30, -80, 90, -180];
 
-q1 = q(1,:);
-q2 = q(2,:);
+q1 = deg2rad(q1);
+q2 = deg2rad(q2);
+
+% q1 = q(1,:);
+% q2 = q(2,:);
 
 
 %% Configure Robot 1  
@@ -61,7 +61,7 @@ V1_J6 = transpose(tool_cloud{:,4:6}/1000);
 n = 40;
 W = CMMCloudRead(cloud);
 % confirm simulated dataset
-W = [W_CMM(:,:,1),W_CMM(:,:,2)]*1000;
+% W = [W_CMM(:,:,1),W_CMM(:,:,2)]*1000;
 
 W1_CMM = [W(:,1:n/2)]/1000;
 W2_CMM = [W(:,n/2+1:n)]/1000;
@@ -98,17 +98,19 @@ H_CMMMiddle = [1 0 0 T_CMMMiddle(1);
 % alexrotm = eul2rotm(eul_alex,'ZYX');
 % H_CMMMid(1:3,1:3) = alexrotm;
 
-H_MB1 = inv(H_CMMMiddle)*H_CMMB1;
-H_B1M = inv(H_MB1);
-T_B1M = H_B1M(1:3,4)*1000;
-eul1 = rotm2eul(H_B1M(1:3,1:3));
+H_M1B1 = inv(H_CMMMiddle)*H_CMMB1;
+H_B1M1 = inv(H_M1B1);
+T_B1M1 = H_B1M1(1:3,4)*1000;
+eul1 = rotm2eul(H_B1M1(1:3,1:3));
 eul1 = flip(rad2deg(eul1));
 
-H_MB2 = inv(H_CMMMiddle)*H_CMMB2;
-H_B2M = inv(H_MB2);
-T_B2M = H_B2M(1:3,4)*1000;
-eul2 = rotm2eul(H_B2M(1:3,1:3));
+H_M2B2 = inv(H_CMMMiddle)*H_CMMB2;
+H_B2M2 = inv(H_M2B2);
+T_B2M2 = H_B2M2(1:3,4)*1000;
+eul2 = rotm2eul(H_B2M2(1:3,1:3));
 eul2 = flip(rad2deg(eul2));
+
+save("Base2Middle.mat","H_B1M1","H_B2M2")
 
 %% Plot Stuff!
 
@@ -149,4 +151,5 @@ view(160, 30)
 % eul2 = eul2
 
 %% Self Register Output
-% H_B1B2 = H_B1M*inv(H_B2M);
+% H_B1B2 = H_B1M1*inv(H_B2M2);
+
