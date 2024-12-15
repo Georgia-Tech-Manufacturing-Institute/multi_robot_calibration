@@ -33,16 +33,18 @@ By default, the script references the latest data stored in `CMM_data`.
 To use other point clouds, pass them via the `-r` and `-t` options shown below. 
 
 ```
-usage: calibrate.py [-h] [-r ROBOT_CLOUD_PATH] [-t TOOL_CLOUD_PATH]
+usage: calibrate.py [-h] [-r ROBOT_CLOUD_PATH] [-t TOOL_CLOUD_PATH] [-p PLOT]
 
 Find world-to-robot transformations.
 
 options:
   -h, --help            show this help message and exit
   -r ROBOT_CLOUD_PATH, --robot_cloud_path ROBOT_CLOUD_PATH
-                        The path to the csv file containing the calibration point clouds for each robot
+                        The path to the csv file containing the calibration point clouds for each
+                        robot
   -t TOOL_CLOUD_PATH, --tool_cloud_path TOOL_CLOUD_PATH
                         The path to the csv file containing the point cloud for the tool
+  -p PLOT, --plot PLOT
 ```
 
 ## Testing
