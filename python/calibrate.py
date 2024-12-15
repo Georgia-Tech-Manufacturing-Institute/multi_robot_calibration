@@ -16,10 +16,12 @@ import os
 import pandas as pd
 import numpy as np
 import argparse
-from spatialmath import SO3, SE3
+import matplotlib.pyplot as plt
+from spatialmath import SE3
 
 from mr_calibration import Robot
 from mr_calibration import ls_registration
+from mr_calibration.geometry import normalize
 
 
 def za6():
@@ -76,9 +78,8 @@ def main():
         default=os.path.join(script_path, "../CMM_data/ToolCloud/tool_cloud.csv"),
         help="The path to the csv file containing the point cloud for the tool",
     )
+    parser.add_argument("-p", "--plot", default=False)
     args = parser.parse_args()
-
-    print(args.robot_cloud_path)
 
     # tool (V), robot1 (W1), and robot2 (W2) point clouds
     V, W1, W2 = get_data(args.tool_cloud_path, args.robot_cloud_path)
@@ -108,14 +109,22 @@ def main():
     print(f"Origin distance (mm): {np.linalg.norm(T_base_rob1_base_rob2.t)}\n")
 
     # Construct world frame between robots
+    origins_vec = normalize(T_cmm_base_rob1.t - T_cmm_base_rob2.t)
     t_cmm_world = 0.5 * (T_cmm_base_rob1.t + T_cmm_base_rob2.t)
-    T_cmm_world = SE3.Rt(SO3().Rz(np.pi / 2), t_cmm_world)
+
+    unit_y = origins_vec
+    unit_z = normalize(0.5 * (T_cmm_base_rob1.A[:3, 2] + T_cmm_base_rob2.A[:3, 2]))
+    unit_z = normalize(unit_z - np.dot(unit_z, origins_vec) * origins_vec)
+    unit_x = normalize(np.cross(unit_y, unit_z))
+
+    R_cmm_world = np.column_stack((unit_x, unit_y, unit_z))
+    T_cmm_world = SE3.Rt(R_cmm_world, t_cmm_world)
 
     # convert to world frame
     T_world_base_rob1 = T_cmm_world.inv() * T_cmm_base_rob1
     T_world_base_rob2 = T_cmm_world.inv() * T_cmm_base_rob2
 
-    print("============ World to Base Transformations ============")
+    print("============ Base to World Transformations ============")
     print(f"T_world_base_rob1:\n {T_world_base_rob1}")
     print(f"T_world_base_rob2:\n {T_world_base_rob2}")
 
@@ -128,7 +137,7 @@ def main():
     T_base_world_rob1 = T_world_base_rob1.inv()
     T_base_world_rob2 = T_world_base_rob2.inv()
 
-    print("============ Base to World Transformations ============")
+    print("============ World to Base Transformations ============")
     print(f"T_base_world_rob1:\n {T_base_world_rob1}")
     print(f"T_base_world_rob2:\n {T_base_world_rob2}")
 
@@ -138,12 +147,11 @@ def main():
     print(f"rob2 orientation (rpy): {np.rad2deg(T_base_world_rob2.rpy())}")
 
     # plot
-    import matplotlib.pyplot as plt
-
-    T_world_base_rob1.plot(frame="B1")
-    T_world_base_rob2.plot(frame="B2")
-    plt.gca().set_aspect("equal")
-    plt.show()
+    if args.plot:
+        T_world_base_rob1.plot(frame="B1")
+        T_world_base_rob2.plot(frame="B2")
+        plt.gca().set_aspect("equal")
+        plt.show()
 
 
 if __name__ == "__main__":
