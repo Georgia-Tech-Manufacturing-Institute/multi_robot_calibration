@@ -23,21 +23,24 @@ addpath('../robot_data/za_description/urdf')
 addpath('../CMM_data/40PointCloudRaw')
 addpath('../CMM_data/ToolCloud')
 
-addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/robot_calib_data_926')
-cloud = readtable("rob2_self_transform_092624.csv", "VariableNamingRule","preserve");
+addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/IterativeMethod_1212')
+cloud = readtable("InitialR2RPoints_1212.csv", "VariableNamingRule","preserve");
 
 robot = importrobot('za.urdf');
-load("q.mat"), load("W.mat")
+% load("q.mat"), load("W.mat")
 
 
 %% Select data set
 
 % Rob1 to Rob2
-q1 = [0, 21, 45, 0, -66, 0];
-q2 = [15, 50, 30, -80, 90, -180];
+% q1 = [0, 21, 45, 0, -66, 0];
+% q2 = [15, 50, 30, -80, 90, -180];
+% 
+% q1 = deg2rad(q1);
+% q2 = deg2rad(q2);
 
-q1 = deg2rad(q1);
-q2 = deg2rad(q2);
+q1 = [-0.24789175391063686, 0.730726957311628, 0.6559345722258424, -1.4246836900715545, -1.6855932474137816, -0.15966585279311146];
+q2 = [0.21151547133604728, 0.7422233223860509, 0.4045844078168699, 1.4762687683103108, -1.5276070833154838, -0.4220822751444625];
 
 % q1 = q(1,:);
 % q2 = q(2,:);
@@ -53,12 +56,17 @@ config2 = homeConfiguration(robot2);
 [config2.JointPosition] = deal([q2(1)],[q2(2)],[q2(3)],[q2(4)],[q2(5)],[q2(6)]);
 
 %% Designed tool points
-% 3x20 tool frame coords
-tool_cloud = readtable("tool_cloud.csv", "VariableNamingRule","preserve");
-V1_J6 = transpose(tool_cloud{:,4:6}/1000);
+% % 3x20 tool frame coords
+% tool_cloud = readtable("tool_cloud.csv", "VariableNamingRule","preserve");
+% V1_J6 = transpose(tool_cloud{:,4:6}/1000);
+
+% 3 x 6 Flange bolt hole pattern in meters
+tool_cloud = readtable("HexToolFramePoints_1212.csv", "VariableNamingRule","preserve");
+%V1_J6 = transpose(tool_cloud{:,4:6}/1000);
+V1_J6 = CMMCloudRead(tool_cloud)/1000;
 
 %% Data import from CMM
-n = 40;
+n = 12;
 W = CMMCloudRead(cloud);
 % confirm simulated dataset
 % W = [W_CMM(:,:,1),W_CMM(:,:,2)]*1000;
@@ -86,7 +94,7 @@ T_B1B2 = norm(H_B1B2(1:3,4))*1000;
 
 % H_W1W2 = CloudReg(W2_CMM,W1_CMM)
 %% Find and Convert to Frame at Midpoint Between Arms
-T_CMMMiddle = [(H_CMMB1(1,4)+H_CMMB2(1,4))/2, (H_CMMB1(2,4)+H_CMMB2(2,4))/2,((H_CMMB1(3,4)+H_CMMB2(3,4))/2)];
+T_CMMMiddle = (H_CMMB1(1:3,4)+H_CMMB2(1:3,4))/2;
 H_CMMMiddle = [1 0 0 T_CMMMiddle(1);
                0 1 0 T_CMMMiddle(2);
                0 0 1 T_CMMMiddle(3);
@@ -94,21 +102,23 @@ H_CMMMiddle = [1 0 0 T_CMMMiddle(1);
 
 
 % alex output
-% eul_alex = [pi/2, 0, 0];
-% alexrotm = eul2rotm(eul_alex,'ZYX');
-% H_CMMMid(1:3,1:3) = alexrotm;
+eul_alex = [pi/2, 0, 0];
+alexrotm = eul2rotm(eul_alex,'ZYX');
+H_CMMMid(1:3,1:3) = alexrotm;
+H_CMMMid = [H_CMMMid(1:3,1:3),T_CMMMiddle;0,0,0,1];
 
-H_M1B1 = inv(H_CMMMiddle)*H_CMMB1;
+
+H_M1B1 = inv(H_CMMMid)*H_CMMB1;
 H_B1M1 = inv(H_M1B1);
-T_B1M1 = H_B1M1(1:3,4)*1000;
-eul1 = rotm2eul(H_B1M1(1:3,1:3));
-eul1 = flip(rad2deg(eul1));
+T_B1M1 = H_B1M1(1:3,4)'*1000
+eul1 = rotm2eul(H_M1B1(1:3,1:3));
+eul1 = flip(eul1)
 
-H_M2B2 = inv(H_CMMMiddle)*H_CMMB2;
+H_M2B2 = inv(H_CMMMid)*H_CMMB2;
 H_B2M2 = inv(H_M2B2);
-T_B2M2 = H_B2M2(1:3,4)*1000;
-eul2 = rotm2eul(H_B2M2(1:3,1:3));
-eul2 = flip(rad2deg(eul2));
+T_B2M2 = H_B2M2(1:3,4)'*1000
+eul2 = rotm2eul(H_M2B2(1:3,1:3));
+eul2 = flip(eul2)
 
 save("Base2Middle.mat","H_B1M1","H_B2M2")
 
@@ -118,6 +128,8 @@ figure(1)
 hold on
 ax1 = plotTransforms(se3(H_CMMB1),'FrameAxisLabels',"on","FrameLabel","Robot 1","FrameSize",.5);
 ax2 = plotTransforms(se3(H_CMMB2),'FrameAxisLabels',"on","FrameLabel","Robot 2","FrameSize",.5);
+ax3 = plotTransforms(se3(H_CMMMid),'FrameAxisLabels',"off","FrameLabel","AlexWorld","FrameSize",.1);
+
 axis normal
 grid on
 view(160, 30)
