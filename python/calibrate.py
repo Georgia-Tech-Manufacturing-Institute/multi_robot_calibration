@@ -21,7 +21,7 @@ from spatialmath import SE3
 
 from mr_calibration import Robot
 from mr_calibration import ls_registration
-from mr_calibration.geometry import normalize
+from mr_calibration.core import create_new_world_frame
 
 
 def za6():
@@ -108,43 +108,18 @@ def main():
     print(f"T_base_rob1_base_rob2:\n {T_base_rob1_base_rob2}")
     print(f"Origin distance (mm): {np.linalg.norm(T_base_rob1_base_rob2.t)}\n")
 
-    # Construct world frame between robots
-    origins_vec = normalize(T_cmm_base_rob1.t - T_cmm_base_rob2.t)
-    t_cmm_world = 0.5 * (T_cmm_base_rob1.t + T_cmm_base_rob2.t)
-
-    unit_y = origins_vec
-    unit_z = normalize(0.5 * (T_cmm_base_rob1.A[:3, 2] + T_cmm_base_rob2.A[:3, 2]))
-    unit_z = normalize(unit_z - np.dot(unit_z, origins_vec) * origins_vec)
-    unit_x = normalize(np.cross(unit_y, unit_z))
-
-    R_cmm_world = np.column_stack((unit_x, unit_y, unit_z))
-    T_cmm_world = SE3.Rt(R_cmm_world, t_cmm_world)
-
     # convert to world frame
-    T_world_base_rob1 = T_cmm_world.inv() * T_cmm_base_rob1
-    T_world_base_rob2 = T_cmm_world.inv() * T_cmm_base_rob2
+    T_world_base_rob1, T_world_base_rob2 = create_new_world_frame(T_base_rob1_base_rob2)
 
+    np.set_printoptions(suppress=True, formatter={"float_kind": "{:0.6f}".format})
     print("============ Base to World Transformations ============")
     print(f"T_world_base_rob1:\n {T_world_base_rob1}")
     print(f"T_world_base_rob2:\n {T_world_base_rob2}")
 
-    print(f"rob1 translation (mm): {T_world_base_rob1.t}")
+    print(f"rob1 translation (m): {T_world_base_rob1.t / 1000}")
     print(f"rob1 orientation (rpy): {T_world_base_rob1.rpy()}")
-    print(f"rob2 translation (mm): {T_world_base_rob2.t}")
+    print(f"rob2 translation (m): {T_world_base_rob2.t / 1000}")
     print(f"rob2 orientation (rpy): {T_world_base_rob2.rpy()}\n")
-
-    # reverse transformation (pathpilot input)
-    T_base_world_rob1 = T_world_base_rob1.inv()
-    T_base_world_rob2 = T_world_base_rob2.inv()
-
-    print("============ World to Base Transformations ============")
-    print(f"T_base_world_rob1:\n {T_base_world_rob1}")
-    print(f"T_base_world_rob2:\n {T_base_world_rob2}")
-
-    print(f"rob1 translation (mm): {T_base_world_rob1.t}")
-    print(f"rob1 orientation (rpy): {np.rad2deg(T_base_world_rob1.rpy())}")
-    print(f"rob2 translation (mm): {T_base_world_rob2.t}")
-    print(f"rob2 orientation (rpy): {np.rad2deg(T_base_world_rob2.rpy())}")
 
     # plot
     if args.plot:

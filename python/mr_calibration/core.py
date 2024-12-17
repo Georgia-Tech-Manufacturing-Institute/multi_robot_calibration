@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
 
-from mr_calibration.geometry import ls_registration
+from spatialmath import SE3
+from mr_calibration.geometry import ls_registration, normalize
 
 
 def calibrate(tool_cloud, robot_clouds, robot_configs, robot):
@@ -34,3 +36,36 @@ def calibrate(tool_cloud, robot_clouds, robot_configs, robot):
         T_cmm_base.append(T_cmm_base_r)
 
     return T_cmm_base
+
+
+def create_new_world_frame(T_B1_B2: SE3):
+    """Creates a frame with:
+    - an origin centered at the average translation
+    - a y-axis (y) pointing from B2 to B1
+    - a z-axis (z) that is the average of Z1, Z2 projected on
+      the plane with normal y
+
+    Parameters
+    ----------
+        T_B1_B2 : SE3
+            The transformation(s) from the first base frame to
+            all other baseframes
+
+    Returns
+    -------
+        (T_W_B1, T_W_B2) : tuple
+            The baseframe transformations in the new world frame
+    """
+
+    vec = normalize(T_B1_B2.t)
+    t_new_world = 0.5 * T_B1_B2.t
+
+    unit_y = -vec
+    unit_z = normalize(0.5 * (np.array([0, 0, 1]) + T_B1_B2.A[:3, 2]))
+    unit_z = normalize(unit_z - np.dot(unit_z, vec) * vec)
+    unit_x = normalize(np.cross(unit_y, unit_z))
+
+    T_B1_W = SE3.Rt(np.column_stack((unit_x, unit_y, unit_z)), t_new_world)
+    T_W_B1 = T_B1_W.inv()
+
+    return T_W_B1, T_W_B1 * T_B1_B2
