@@ -54,10 +54,6 @@ R_M2M2new = quat2rotm(q_M2M2new);
 H_M1M1new = [R_M1M1new,T_M1M1new;0,0,0,1];
 H_M2M2new = [R_M2M2new,T_M2M2new;0,0,0,1];
 
-eul_alex = [pi/2, 0, 0];
-alexrotm = eul2rotm(eul_alex,'ZYX');
-H_AlexRot = [alexrotm,zeros(3,1);0,0,0,1];
-
 H_B1M1new = H_B1M1*H_M1M1new;
 T_B1M1new = H_B1M1new(1:3,4)'*1000
 eul1 = rotm2eul(H_B1M1new(1:3,1:3));
