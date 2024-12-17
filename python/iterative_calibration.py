@@ -75,7 +75,8 @@ def main():
     point_cloud_error = np.linalg.norm(point_cloud_trans, axis=1)
     print(f"Point cloud average error (mm): {np.mean(point_cloud_error)}")
     print(f"Point cloud stddev error (mm): {np.std(point_cloud_error)}")
-    print(f"Point cloud norm error (mm): {np.linalg.norm(point_cloud_error)}\n")
+    print(f"Point cloud norm error (mm): {np.linalg.norm(point_cloud_error)}")
+    print(f"Point cloud sum error (mm) {np.sum(point_cloud_error)}\n")
 
     # Transformation between point clouds
     T_Wold1_Wold2 = ls_registration(W1, W2)
@@ -102,9 +103,9 @@ def main():
     print(f"T_world_base_rob1:\n {T_world_base_rob1}")
     print(f"T_world_base_rob2:\n {T_world_base_rob2}")
 
-    print(f"rob1 translation (m): {T_world_base_rob1.t}")
+    print(f"rob1 translation (m): {T_world_base_rob1.t / 1000}")
     print(f"rob1 orientation (rpy): {T_world_base_rob1.rpy()}")
-    print(f"rob2 translation (m): {T_world_base_rob2.t}")
+    print(f"rob2 translation (m): {T_world_base_rob2.t / 1000}")
     print(f"rob2 orientation (rpy): {T_world_base_rob2.rpy()}\n")
 
     # plot
