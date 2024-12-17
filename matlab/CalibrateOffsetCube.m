@@ -109,15 +109,17 @@ H_CMMMid = [H_CMMMid(1:3,1:3),T_CMMMiddle;0,0,0,1];
 
 
 H_M1B1 = inv(H_CMMMid)*H_CMMB1;
+
 H_B1M1 = inv(H_M1B1);
 T_B1M1 = H_B1M1(1:3,4)'*1000
-eul1 = rotm2eul(H_M1B1(1:3,1:3));
+eul1 = rotm2eul(H_B1M1(1:3,1:3));
 eul1 = flip(eul1)
 
 H_M2B2 = inv(H_CMMMid)*H_CMMB2;
+
 H_B2M2 = inv(H_M2B2);
 T_B2M2 = H_B2M2(1:3,4)'*1000
-eul2 = rotm2eul(H_M2B2(1:3,1:3));
+eul2 = rotm2eul(H_B2M2(1:3,1:3));
 eul2 = flip(eul2)
 
 save("Base2Middle.mat","H_B1M1","H_B2M2")
@@ -133,27 +135,6 @@ ax3 = plotTransforms(se3(H_CMMMid),'FrameAxisLabels',"off","FrameLabel","AlexWor
 axis normal
 grid on
 view(160, 30)
-
-%% Plot Stuff! UNUSED
-% close all
-% figure(2)
-% show(robot1,config1,Frames="on",Position=[H_CMMB1(1,4) H_CMMB1(2,4) H_CMMB1(3,4) deg2rad(eul1(3))]);
-% hold on
-% show(robot2,config2,Frames="on",Position=[H_CMMB2(1,4) H_CMMB2(2,4) H_CMMB2(3,4) deg2rad(eul2(3))]);
-% 
-% plot3([H_CMMB1(1,4) 0 H_CMMB2(1,4)],[H_CMMB1(2,4) 0 H_CMMB2(2,4)],[H_CMMB1(3,4) 0 H_CMMB2(3,4)],'-*r')
-% % xlim([-1 1])
-% % ylim([-.2 .8])
-% % zlim([-.25 1.5])
-% axis padded
-% view(-30, 30)
-% plot3([H_CMMB1(1,4) T_CMMMiddle(1) H_CMMB2(1,4)],[H_CMMB1(2,4) T_CMMMiddle(2) H_CMMB2(2,4)],[H_CMMB1(3,4) T_CMMMiddle(3) H_CMMB2(3,4)],'-*b')
-% 
-% text(0,0,0+.075, 'CMM origin')
-% text(T_CMMMiddle(1), T_CMMMiddle(2), T_CMMMiddle(3)+.075,'XY Midpoint')
-% text(H_CMMB1(1,4)-.15, H_CMMB1(2,4)-.11,H_CMMB1(3,4)-.15,'Robot 1')
-% text(H_CMMB2(1,4)-.15, H_CMMB2(2,4)-.11,H_CMMB2(3,4)-.15,'Robot 2')
-% xlabel('X'), ylabel('Y'), zlabel('Z');
 
 %% Path Pilot Outputs
 % T_B1M = T_B1M
