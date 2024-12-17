@@ -20,9 +20,6 @@ Wx = accumarray(idx,cloud{:,4},[],@mean);
 Wy = accumarray(idx,cloud{:,5},[],@mean);
 Wz = accumarray(idx,cloud{:,6},[],@mean);
 
-% W1 = [Wx(1:n/2)'; Wy(1:n/2)'; Wz(1:n/2)']/1000;
-% W2 = [Wx(n/2+1:n)'; Wy(n/2+1:n)'; Wz(n/2+1:n)']/1000;
-
 W = [Wx'; Wy'; Wz'];
 
 end
