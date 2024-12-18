@@ -81,7 +81,7 @@ def main():
     print(f"Point cloud sum error (mm) {np.sum(point_cloud_error)}\n")
 
     # Transformation between point clouds
-    T_Wold1_Wold2 = ls_registration(W1, W2)
+    T_Wold1_Wold2 = ls_registration(W1, W2).inv()
     T_Wold1_Wnew = T_Wold1_Wold2.interp1(0.5)
 
     # Updated baseframe locations
@@ -119,9 +119,10 @@ def main():
 
         ax2 = plt.figure("Error distribution").add_subplot()
         for i in range(int(len(point_cloud_error) / POINTS_PER_CORNER)):
+            xs, xe = POINTS_PER_CORNER * i, POINTS_PER_CORNER * (i + 1)
             ax2.bar(
-                x=range(POINTS_PER_CORNER * i, POINTS_PER_CORNER * (i + 1)),
-                height=point_cloud_error[i : i + POINTS_PER_CORNER],
+                x=range(xs, xe),
+                height=point_cloud_error[xs:xe],
             )
         ax2.set_title("Point Cloud Error Magnitude")
         ax2.set_ylabel("Error norm (mm)")

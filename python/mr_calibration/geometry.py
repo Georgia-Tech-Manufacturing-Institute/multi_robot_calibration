@@ -21,8 +21,9 @@ def ls_registration(points_A, points_B, thresh=1e-2):
     Least-squares registration of point sets
 
     Find the transformation matrix that transforms the set of points `points_A`
-    to `points_B` with the least-square error. There should be at least 6 points
-    in each set.
+    to `points_B` with the least-square error. In other words this provides the
+    transformation (B^T_A) which expresses frame A in the coordinates of frame B.
+    There should be at least 6 points in each set.
 
     Parameters
     ----------
