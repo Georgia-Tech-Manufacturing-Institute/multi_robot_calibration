@@ -22,6 +22,8 @@ import matplotlib.pyplot as plt
 from mr_calibration import ls_registration
 from mr_calibration.core import create_new_world_frame
 
+POINTS_PER_CORNER = 6
+
 
 def parse_data(data_path):
     """Returns averaged point cloud"""
@@ -53,7 +55,7 @@ def main():
         default=os.path.join(script_path, "../CMM_data/IterativePointCloud/cubes.csv"),
         help="The path to the csv file containing the calibration point clouds for each robot",
     )
-    parser.add_argument("-p", "--plot", default=False)
+    parser.add_argument("-p", "--plot", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     # robot1 (W1), and robot2 (W2) point clouds
@@ -116,10 +118,11 @@ def main():
         plt.gca().set_aspect("equal")
 
         ax2 = plt.figure("Error distribution").add_subplot()
-        ax2.bar(
-            [f"point {i}" for i in range(1, len(point_cloud_error) + 1)],
-            height=point_cloud_error,
-        )
+        for i in range(int(len(point_cloud_error) / POINTS_PER_CORNER)):
+            ax2.bar(
+                x=range(POINTS_PER_CORNER * i, POINTS_PER_CORNER * (i + 1)),
+                height=point_cloud_error[i : i + POINTS_PER_CORNER],
+            )
         ax2.set_title("Point Cloud Error Magnitude")
         ax2.set_ylabel("Error norm (mm)")
         plt.show()

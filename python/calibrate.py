@@ -78,7 +78,7 @@ def main():
         default=os.path.join(script_path, "../CMM_data/ToolCloud/tool_cloud.csv"),
         help="The path to the csv file containing the point cloud for the tool",
     )
-    parser.add_argument("-p", "--plot", default=False)
+    parser.add_argument("-p", "--plot", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     # tool (V), robot1 (W1), and robot2 (W2) point clouds
