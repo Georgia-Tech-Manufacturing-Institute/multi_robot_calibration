@@ -13,16 +13,25 @@
 % limitations under the License.
 
 function [H_BA] = CloudReg(A,B)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%CloudReg Summary of this function goes here
+%   Passive Least quares registration of point sets
+%   This finds the 4x4 Homogeneous transformation matrix that transforms
+%   points A to points B with the least-square error
+%   points_B = R * points_A + t
+
+%   For a point cloud expressed in two frames A, B, this returns the
+%   transformation of frame A with respect to frame B (B^T_A). There should be
+%   at least 6 points in each set.
+%   
 % Inputs:
-%       V: Tool points in the J6 frame of the Tormach ZA6
-%       W: Tool points in the CMM frame
+%       A: First list of points
+%       B: Second list of points
 %       robot: rigidBodyTree of the tormach ZA6, used for configurations
 %       config: joint angles of the given robot
 % Outputs:
-%       H_CMMBase: Homogeneous transformation matrix from the CMM to the
-%       Robot base
+%       H_BA: Homogeneous transformation matrix giving 
+%             Frame A expressed in frame B
+%       
 %% Find Rigid Transformation matrix between tool and CMM
 % Cite: cs.hunter.edu/~ioannis/registerpts_allen_notes.pdf
 % A = V; % tool data

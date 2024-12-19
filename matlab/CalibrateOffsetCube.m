@@ -90,59 +90,31 @@ H_CMMB2 = H_CMMJ62*H_J6Base2;
 
 H_B1B2 = inv(H_CMMB1)*H_CMMB2;
 
-T_B1B2 = norm(H_B1B2(1:3,4))*1000;
+[H_WB1,H_WB2] = FrameAlign(H_B1B2);
 
-% H_W1W2 = CloudReg(W2_CMM,W1_CMM)
-%% Find and Convert to Frame at Midpoint Between Arms
-T_CMMMiddle = (H_CMMB1(1:3,4)+H_CMMB2(1:3,4))/2;
-H_CMMMiddle = [1 0 0 T_CMMMiddle(1);
-               0 1 0 T_CMMMiddle(2);
-               0 0 1 T_CMMMiddle(3);
-               0 0 0     1         ;];
+T_W1B1 = round(H_WB1(1:3,4)'*1000,6)
+eul1 = rotm2eul(H_WB1(1:3,1:3));
+eul1 = round(flip(eul1),6)
 
+T_W2B2 = round(H_WB2(1:3,4)'*1000,6)
+eul2 = rotm2eul(H_WB2(1:3,1:3));
+eul2 = round(flip(eul2),6)
 
-% alex output
-eul_alex = [pi/2, 0, 0];
-alexrotm = eul2rotm(eul_alex,'ZYX');
-H_CMMMid(1:3,1:3) = alexrotm;
-H_CMMMid = [H_CMMMid(1:3,1:3),T_CMMMiddle;0,0,0,1];
-
-
-H_M1B1 = inv(H_CMMMid)*H_CMMB1;
-
-H_B1M1 = inv(H_M1B1);
-T_B1M1 = H_B1M1(1:3,4)'*1000
-eul1 = rotm2eul(H_B1M1(1:3,1:3));
-eul1 = flip(eul1)
-
-H_M2B2 = inv(H_CMMMid)*H_CMMB2;
-
-H_B2M2 = inv(H_M2B2);
-T_B2M2 = H_B2M2(1:3,4)'*1000
-eul2 = rotm2eul(H_B2M2(1:3,1:3));
-eul2 = flip(eul2)
-
-save("Base2Middle.mat","H_B1M1","H_B2M2")
+H_B1W = inv(H_WB1)
+H_B2W = inv(H_WB2);
+save("Base2Middle.mat","H_B1W","H_B2W")
 
 %% Plot Stuff!
+H_CMMW = H_CMMB1*H_B1W;
+
 
 figure(1)
 hold on
 ax1 = plotTransforms(se3(H_CMMB1),'FrameAxisLabels',"on","FrameLabel","Robot 1","FrameSize",.5);
 ax2 = plotTransforms(se3(H_CMMB2),'FrameAxisLabels',"on","FrameLabel","Robot 2","FrameSize",.5);
-ax3 = plotTransforms(se3(H_CMMMid),'FrameAxisLabels',"off","FrameLabel","AlexWorld","FrameSize",.1);
+ax3 = plotTransforms(se3(H_CMMW),'FrameAxisLabels',"off","FrameLabel","AlexWorld","FrameSize",.1);
 
 axis normal
 grid on
-view(160, 30)
-
-%% Path Pilot Outputs
-% T_B1M = T_B1M
-% eul1 = eul1
-% 
-% T_B2M = T_B2M
-% eul2 = eul2
-
-%% Self Register Output
-% H_B1B2 = H_B1M1*inv(H_B2M2);
+view(160,30)
 
