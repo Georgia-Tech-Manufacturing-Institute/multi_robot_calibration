@@ -50,8 +50,6 @@ class TestCalibration(unittest.TestCase):
         T_cmm_tool_rob1 = ls_registration(V, W1)
         T_cmm_tool_rob2 = ls_registration(V, W2)
 
-        print(T_cmm_tool_rob1)
-
         # create robot
         robot = Robot.URDF(xacro_path)
 
@@ -90,6 +88,30 @@ class TestGeometry(unittest.TestCase):
 
         T_approx = ls_registration(A, B)
         self.assertEqual(T_approx, T)
+
+    def test_passive_registration(self):
+        # one cloud expressed in two frames
+        A_P = np.array([[3, 0, 0], [5, 0, 0], [5, -2, 0], [3, -2, 0]])
+        B_P = np.array([[1, 6, 0], [1, 4, 0], [-1, 4, 0], [-1, 6, 0]])
+
+        T_B_A = ls_registration(A_P, B_P)
+        T = SE3.Rt(SO3.Rz(-90, unit="deg"), [1.0, 9.0, 0.0])
+        self.assertEqual(T_B_A, T)
+
+    def test_active_registration(self):
+        # two clouds expressed in same frame
+        W_P1 = np.array([[3, 4, 0], [3, 2, 0], [1, 2, 0], [1, 4, 0]])
+        W_P2 = np.array([[5, 3, 0], [7, 3, 0], [7, 1, 0], [5, 1, 0]])
+
+        # point coordinates local to each frame
+        AB_P = np.array([[1, 1, 0], [1, -1, 0], [-1, -1, 0], [-1, 1, 0]])
+
+        T_W_A = ls_registration(AB_P, W_P1)
+        T_W_B = ls_registration(AB_P, W_P2)
+        T_B_A = T_W_B.inv() * T_W_A
+
+        T = SE3.Rt(SO3.Rz(-90, unit="deg"), [1.0, 4.0, 0.0])
+        self.assertEqual(T_B_A, T)
 
     def test_line_intersection(self):
         p0 = np.array([-1.0, 0.0, 0.0])

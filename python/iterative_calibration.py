@@ -19,7 +19,7 @@ import pandas as pd
 from spatialmath import SO3, SE3
 
 import matplotlib.pyplot as plt
-from mr_calibration import ls_registration
+from mr_calibration.geometry import ls_registration
 from mr_calibration.core import create_new_world_frame
 
 POINTS_PER_CORNER = 6
@@ -42,6 +42,35 @@ def get_data(robot_cloud_path):
     W2 = W[midpoint:]
 
     return (W1, W2)
+
+
+def create_cube(l, w, h):
+    l2, w2, h2 = l / 2, w / 2, h / 2
+    points = np.array(
+        [
+            [l2, w2, h2],
+            [l2, -w2, h2],
+            [-l2, -w2, h2],
+            [-l2, w2, h2],
+            [-l2, w2, -h2],
+            [l2, w2, -h2],
+            [l2, -w2, -h2],
+            [-l2, -w2, -h2],
+        ]
+    )
+    return points
+
+
+def average_every_m_points(mat, M):
+    N = mat.shape[0]
+    if N % M != 0:
+        raise ValueError(
+            f"The number of rows N must be divisible by M, but N = {N} and M = {M}"
+        )
+
+    reshaped_arr = mat.reshape(N // M, M, 3)
+    averaged_arr = reshaped_arr.mean(axis=1)
+    return averaged_arr
 
 
 def main():
@@ -81,21 +110,19 @@ def main():
     print(f"Point cloud sum error (mm) {np.sum(point_cloud_error)}\n")
 
     # Transformation between point clouds
-    T_Wold1_Wold2 = ls_registration(W1, W2).inv()
+    points = create_cube(200, 200, 200) + np.array([0.0, 0.0, 200])
+    W1_avg = average_every_m_points(W1, 6)
+    W2_avg = average_every_m_points(W2, 6)
+
+    T_Wold1_CMM = ls_registration(W1_avg, points)
+    T_CMM_Wold2 = ls_registration(points, W2_avg)
+
+    T_Wold1_Wold2 = T_Wold1_CMM * T_CMM_Wold2
     T_Wold1_Wnew = T_Wold1_Wold2.interp1(0.5)
 
     # Updated baseframe locations
     T_Wnew_base1 = T_Wold1_Wnew.inv() * T_Wold1_base1
     T_Wnew_base2 = T_Wold1_Wnew.inv() * T_Wold1_Wold2 * T_Wold2_base2
-
-    # print("============ Updated Baseframe Transformations ============")
-    # print(f"T_Wnew_base1:\n {T_Wnew_base1}")
-    # print(f"T_Wnew_base2:\n {T_Wnew_base2}")
-    #
-    # print(f"rob1 translation (m): {T_Wnew_base1.t / 1000}")
-    # print(f"rob1 orientation (rpy): {T_Wnew_base1.rpy()}")
-    # print(f"rob2 translation (m): {T_Wnew_base2.t / 1000}")
-    # print(f"rob2 orientation (rpy): {T_Wnew_base2.rpy()}\n")
 
     np.set_printoptions(suppress=True, formatter={"float_kind": "{:0.6f}".format})
     print("============ Base to World Transformations ============")

@@ -18,12 +18,16 @@ from spatialmath import SO3, SE3
 
 def ls_registration(points_A, points_B, thresh=1e-2):
     """
-    Least-squares registration of point sets
+    Passive least-squares registration of point sets
 
-    Find the transformation matrix that transforms the set of points `points_A`
-    to `points_B` with the least-square error. In other words this provides the
-    transformation (B^T_A) which expresses frame A in the coordinates of frame B.
-    There should be at least 6 points in each set.
+    This finds the SE(3) matrix (R, t) that transforms points_A to
+    points_B with the least-square error.
+
+    points_B = R * points_A + t
+
+    For the same point cloud expressed in two frames (A, B), this returns the
+    transformation of frame A with respect to frame B (B^T_A). There should be
+    at least 6 points in each set.
 
     Parameters
     ----------
@@ -37,7 +41,7 @@ def ls_registration(points_A, points_B, thresh=1e-2):
 
     Returns
     -------
-    transform : ndarray
+    transform : SE3
         The homogeneous transformation that transforms points in points_A to
         points_B
 
@@ -47,6 +51,8 @@ def ls_registration(points_A, points_B, thresh=1e-2):
         When the determinate of the rotation matrix is farther than `thresh`
         from 1
     """
+    assert points_A.shape == points_B.shape
+
     centroid_A = np.mean(points_A, axis=0)
     centroid_B = np.mean(points_B, axis=0)
 
