@@ -15,16 +15,16 @@
 %% Slerping
 % aka iteratively averaging toward a common World frame
 clear, clc, close all, format compact
-% load("Base2Middle.mat")
+load("Base2Middle.mat")
 % load("iteration0.mat")
 % load("iteration1.mat")
-load("iteration2.mat")
+% load("iteration2.mat")
 %%
 addpath('/Users/andrewschneider/GaTech Dropbox/Andrew Schneider/calibration_data/IterativeMethod_1219')
 % cloud = readtable("relative_trans0_20241216.csv", "VariableNamingRule","preserve");
 % cloud = readtable("relative_trans1_20241219.csv", "VariableNamingRule","preserve");
 % cloud = readtable("relative_trans2_20241219.csv", "VariableNamingRule","preserve");
-cloud = readtable("relative_trans3_20241219.csv", "VariableNamingRule","preserve");
+cloud = readtable("relative_trans1_20241219.csv", "VariableNamingRule","preserve");
 
 
 l = .2; w = .2; h = .2;
@@ -46,21 +46,23 @@ n = length(W);
 A_raw = [W(:,1:n/2)]/1000;
 B_raw = [W(:,n/2+1:n)]/1000;
 
+
+
+pointError = vecnorm(A_raw-B_raw);
+pointAvgErro = mean(pointError)*1000
+stddev = std(pointError)*1000
+NormError = norm(vecnorm(A_raw-B_raw))*1000
+SumError = sum(vecnorm(A_raw-B_raw))*1000
+
+figure(1)
+plot3(A_raw(1,:)',A_raw(2,:)',A_raw(3,:)',"-.b")
+hold on
+plot3(B_raw(1,:)',B_raw(2,:)',B_raw(3,:)',"-.r")
+
 for i = 1:1:8
     A(:,i) = mean(A_raw(:,6*(i-1)+1:6*i)')';
     B(:,i) = mean(B_raw(:,6*(i-1)+1:6*i)')';
 end
-
-pointError = vecnorm(A-B);
-pointAvgErro = mean(pointError)*1000
-stddev = std(pointError)*1000
-NormError = norm(vecnorm(A-B))*1000
-SumError = sum(vecnorm(A-B))*1000
-
-figure(1)
-plot3(A(1,:)',A(2,:)',A(3,:)',"-.b")
-hold on
-plot3(B(1,:)',B(2,:)',B(3,:)',"-.r")
 
 H_V1A = CloudReg(A,V); % rad, m
 H_V2B = CloudReg(B,V); % rad, m
@@ -105,7 +107,7 @@ eul2 = round(flip(eul2),6)
 
 H_B1W = inv(H_WB1);
 H_B2W = inv(H_WB2);
-save("iteration3.mat","H_B1W","H_B2W")
+save("iteration1.mat","H_B1W","H_B2W")
 
 %% Plot Stuff!
 
