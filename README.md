@@ -14,26 +14,34 @@ Clone the repository,
 git clone git@github.com:Georgia-Tech-Manufacturing-Institute/multi_robot_calibration.git
 ```
 
-A few dependencies need to be installed to use the Python scripts. Navigate to
-the `python` directory and run the following command.
+The Python package and it's dependencies are installed locally with pip.
 ```
-pip3 install -r requirements.txt
+git clone git@github.com:Georgia-Tech-Manufacturing-Institute/multi_robot_calibration.git
+cd multi_robot_calibration/python
+pip install -e .
 ```
 
-Test the installation with
+For developers, if you would like to run the Python unit tests.
 ```
-python3 calibrate.py -h
+pip install -e .[dev]
+pytest
 ```
 
 ## Data Collection
 
 ## Usage
 
-By default, the script references the latest data stored in `CMM_data`.
+The Python installation will expose two scripts.
+
+1) `calibrate-bf` for base-frame calibration using closed form transformations
+2) `calibrate-iterative` for iterative multi-robot calibration
+
+By default, the script references the example data stored in the `data` folder.
 To use other point clouds, pass them via the `-r` and `-t` options shown below. 
 
+#### `calibrate-bf`
 ```
-usage: calibrate.py [-h] [-r ROBOT_CLOUD_PATH] [-t TOOL_CLOUD_PATH] [-p PLOT]
+usage: calibrate-bf [-h] [-r ROBOT_CLOUD_PATH] [-t TOOL_CLOUD_PATH] [-p PLOT]
 
 Find world-to-robot transformations.
 
@@ -47,6 +55,18 @@ options:
   -p PLOT, --plot PLOT
 ```
 
+#### `calibrate-iterative`
+```
+usage: calibrate-iterative [-h] [-r ROBOT_CLOUD_PATH] [-p | --plot | --no-plot]
+
+Find world-to-robot transformations.
+
+options:
+  -h, --help            show this help message and exit
+  -r ROBOT_CLOUD_PATH, --robot_cloud_path ROBOT_CLOUD_PATH
+                        The path to the csv file containing the calibration point clouds for each robot
+  -p, --plot, --no-plot
+```
 ## Testing
 
 The Python library uses the [pytest](https://doc.pytest.org/en/latest/)
@@ -54,6 +74,7 @@ framework. First, install the dependencies required by the tests. From the root
 directory of the repository,
 
 ```
-pip install -r python/test-requirements.txt
+cd multi_robot_calibration/python
+pip install -e .[dev]
 pytest
 ```
