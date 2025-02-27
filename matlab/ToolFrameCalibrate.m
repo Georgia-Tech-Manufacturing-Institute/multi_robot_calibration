@@ -6,7 +6,7 @@ q3 = [0,0,0,0,0,0];
 q4 = [0,0,0,0,0,0];
 qi = [q1;q2;q3;q4];
 
-function [H70] = BaseInSeven(x0,q)
+function [P] = BaseInSeven(x0,q)
     t1 = [0, 0, .45];
     t2 = [.025, 0, 0];
     t3 = [0, -.001, .454];
@@ -33,15 +33,20 @@ function [H70] = BaseInSeven(x0,q)
     
     H70 = inv(H01*H12*H23*H34*H45*H56*H67);
 
+    P = H70(1:3,4)';
 end
 
 function [x] = bases(x0,qi)
     n = height(qi);
+    x = zeros(1,n);
+    bases = zeros(n,3);
     for i=1:n
         bases(i,:) = BaseInSeven(x0,qi(i,:));
     end
+    centroid = mean(bases, 1);
+    bases_offset = bases-centroid;
     for i = 1:n
-        x(i) = norm(bases(i,:));
+        x(i) = norm(bases_offset(i,:));
     end
 end
 
