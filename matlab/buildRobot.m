@@ -15,19 +15,19 @@
 function [H60] = buildRobot(init,q)
     % Assume errors may exist only where manufacturer states explicit
     % offsets exist
-    % t1 = [0, 0, init(1)];
-    % t2 = [init(2), 0, 0];
-    % t3 = [0, init(3), init(4)];
-    % t4 = [0, 0, init(5)];
-    % t5 = [init(6), init(7), 0];
-    % t6 = [init(8), 0, 0];
+    t1 = [0, 0, init(1)];
+    t2 = [init(2), 0, 0];
+    t3 = [0, init(3), init(4)];
+    t4 = [0, 0, init(5)];
+    t5 = [init(6), init(7), 0];
+    t6 = [init(8), 0, 0];
     % Assume errors may exist everywhere
-    t1 = [init(1), init(2), init(3)];
-    t2 = [init(4), init(5), init(6)];
-    t3 = [init(7), init(8), init(9)];
-    t4 = [init(10), init(11), init(12)];
-    t5 = [init(13), init(14), init(15)];
-    t6 = [init(16), init(17), init(18)];
+    % t1 = [init(1), init(2), init(3)];
+    % t2 = [init(4), init(5), init(6)];
+    % t3 = [init(7), init(8), init(9)];
+    % t4 = [init(10), init(11), init(12)];
+    % t5 = [init(13), init(14), init(15)];
+    % t6 = [init(16), init(17), init(18)];
     
     eul1 = [0, 0, q(1)];
     eul2 = [0, q(2), 0];
