@@ -19,7 +19,7 @@ import pandas as pd
 from spatialmath import SO3, SE3
 
 import matplotlib.pyplot as plt
-from mr_calibration.geometry import ls_registration
+from mr_calibration.core.geometry import ls_registration
 from mr_calibration.core import create_new_world_frame
 
 POINTS_PER_CORNER = 6
@@ -81,7 +81,7 @@ def main():
     parser.add_argument(
         "-r",
         "--robot_cloud_path",
-        default=os.path.join(script_path, "../CMM_data/IterativePointCloud/cubes.csv"),
+        default=os.path.join(script_path, "data/cubes.csv"),
         help="The path to the csv file containing the calibration point clouds for each robot",
     )
     parser.add_argument("-p", "--plot", action=argparse.BooleanOptionalAction)

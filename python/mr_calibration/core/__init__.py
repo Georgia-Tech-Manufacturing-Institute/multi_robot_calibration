@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
+from .dh_robot import *
+from .geometry import *
+from .keyence_cmm import *
 
+
+import numpy as np
 from spatialmath import SE3
-from mr_calibration.geometry import ls_registration, normalize
 
 
 def calibrate(tool_cloud, robot_clouds, robot_configs, robot):

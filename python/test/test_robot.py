@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from spatialmath import SE3
 
-from mr_calibration import Robot, DHType
+from mr_calibration.core import Robot, DHType
 
 
 def puma560():

@@ -7,12 +7,12 @@ import numpy.testing as nt
 from roboticstoolbox import Robot
 from spatialmath import SO3, SE3
 
-from mr_calibration.geometry import (
+from mr_calibration.core.geometry import (
     ls_registration,
     three_point_circle,
     line_intersection,
 )
-from mr_calibration.keyence_cmm import read_point_cloud
+from mr_calibration.core.keyence_cmm import read_point_cloud
 
 
 def get_data(tool_cloud_path, robot_cloud_path):

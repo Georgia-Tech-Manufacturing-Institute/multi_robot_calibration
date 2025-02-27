@@ -19,8 +19,8 @@ import argparse
 import matplotlib.pyplot as plt
 from spatialmath import SE3
 
-from mr_calibration import Robot
-from mr_calibration import ls_registration
+from mr_calibration.core import Robot
+from mr_calibration.core import ls_registration
 from mr_calibration.core import create_new_world_frame
 
 
@@ -67,15 +67,13 @@ def main():
     parser.add_argument(
         "-r",
         "--robot_cloud_path",
-        default=os.path.join(
-            script_path, "../CMM_data/40PointCloudRaw/rob2_self_transform_092024.csv"
-        ),
+        default=os.path.join(script_path, "data/rob_self_transform.csv"),
         help="The path to the csv file containing the calibration point clouds for each robot",
     )
     parser.add_argument(
         "-t",
         "--tool_cloud_path",
-        default=os.path.join(script_path, "../CMM_data/ToolCloud/tool_cloud.csv"),
+        default=os.path.join(script_path, "data/tool_cloud.csv"),
         help="The path to the csv file containing the point cloud for the tool",
     )
     parser.add_argument("-p", "--plot", action=argparse.BooleanOptionalAction)
