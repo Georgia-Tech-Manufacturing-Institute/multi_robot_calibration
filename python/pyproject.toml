@@ -29,6 +29,7 @@ issues = "https://github.com/Georgia-Tech-Manufacturing-Institute/multi_robot_ca
 [project.scripts]
 calibrate-bf = "mr_calibration.bf_calibration:main"
 calibrate-iterative = "mr_calibration.iterative_calibration:main"
+calibrate-tool = "mr_calibration.tool_calibration:main"
 
 [tool.setuptools.package-data]
 packages = ["data/*.csv"]

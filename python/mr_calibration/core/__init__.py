@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from numba.core.errors import init
+from pandas._config import config
 from .dh_robot import *
 from .geometry import *
 from .keyence_cmm import *
@@ -19,6 +21,7 @@ from .keyence_cmm import *
 
 import numpy as np
 from spatialmath import SE3
+from scipy.optimize import minimize
 
 
 def calibrate(tool_cloud, robot_clouds, robot_configs, robot):
@@ -39,6 +42,23 @@ def calibrate(tool_cloud, robot_clouds, robot_configs, robot):
         T_cmm_base.append(T_cmm_base_r)
 
     return T_cmm_base
+
+
+def tool_calibration(robot: Robot, configs: np.ndarray, initial: np.ndarray):
+    def cost(x):
+        flange_poses = robot.fk(configs)
+        tool_positions = flange_poses * x
+        t = np.sum(np.std(tool_positions, axis=1))
+        return t
+
+    res = minimize(
+        cost,
+        x0=initial,
+        method="BFGS",
+        options={"fatol": 1e-12},
+    )
+    print(res)
+    return res.x
 
 
 def create_new_world_frame(T_B1_B2: SE3):
