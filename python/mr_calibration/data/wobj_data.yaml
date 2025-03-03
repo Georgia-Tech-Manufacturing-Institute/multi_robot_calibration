@@ -1,0 +1,8 @@
+positions: # Probed points
+  - [10.0, 0.0, 0.0] # origin
+  - [10.0, 2.0, 0.0] # x-axis
+  - [7.0, 0.0, 0.0] # y-axis
+
+transformation: # Robot in the world frame (T_world_rob)
+  xyz: [-2.0, -5.0, 0.0]
+  rpy: [0.0, 0.0, 1.570796]
