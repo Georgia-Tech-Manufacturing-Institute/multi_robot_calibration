@@ -45,7 +45,7 @@ def main():
 
     # Parse input csv file locations
     parser = argparse.ArgumentParser(
-        description="Find the flange-to-tool transformation"
+        description="Find the world-to-work_object transformation"
     )
     parser.add_argument(
         "-d",
