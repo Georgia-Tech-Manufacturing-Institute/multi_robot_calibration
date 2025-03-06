@@ -62,10 +62,13 @@ def main():
     robot = Robot(za6())
     robot.tool = SE3.Rx(np.pi) * SE3.Ry(np.pi / 2)
 
-    initial_guess = np.array([-0.087, 0.00087, 0.012]) * 1000 # mm
-    initial_guess = np.array([0.012, 0.00087, -0.087]) * 1000 # mm
+    initial_guess = np.array([-0.087, 0.00087, 0.012]) * 1000  # mm
+    initial_guess = np.array([0.012, 0.00087, -0.087]) * 1000  # mm
     res = tool_calibration(robot, qq, initial_guess)
-    print(res)
+
+    np.set_printoptions(suppress=True, formatter={"float_kind": "{:0.6f}".format})
+    print(f"Tool translation (mm): {res}")
+    print(f"Tool translation (m): {res / 1000}")
 
 
 if __name__ == "__main__":

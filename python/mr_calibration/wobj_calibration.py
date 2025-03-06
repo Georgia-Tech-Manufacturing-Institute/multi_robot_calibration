@@ -66,11 +66,12 @@ def main():
     x_axis = x_axis / np.linalg.norm(x_axis)
     y_axis = y_axis / np.linalg.norm(y_axis)
     normal = normal / np.linalg.norm(normal)
-    T_base_wobj = SE3.Rt(np.array([x_axis, y_axis, normal]).T, origin)
+    T_base_wobj = SE3.Rt(np.array([x_axis, y_axis, normal]).T, origin, check=False)
 
     # Transform to world frame
     T_world_wobj = T_world_base * T_base_wobj
 
+    np.set_printoptions(suppress=True, formatter={"float_kind": "{:0.6f}".format})
     print("============ Work Object Transformation ============")
     print(f"T_world_wobj:\n {T_world_wobj}")
 
