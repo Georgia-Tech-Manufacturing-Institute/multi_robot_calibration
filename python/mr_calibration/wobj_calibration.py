@@ -13,12 +13,14 @@
 # limitations under the License.
 
 # robot_to_world
-# three points (origin, x, y)
+# three points (origin, p1, p2)
 
-# 1) form plane in robot frame with three points
-#    a) plane = (normal, origin)
-#    b) origin = origin, normal = x.cross(y)
-# 2) transform plane norm and origin to world frame
+# 1) form transformation in robot frame with three points
+#    b) x-axis = unit(p1 - origin)
+#    c) z-axis = unit(x-axis.cross(p2 - origin))
+#    d) y-axis = unit(z-axis.cross(x-axis))
+#    e) R = [x-axis, y-axis, z-axis]
+# 2) transform R and origin to world frame
 
 import os
 import yaml
@@ -60,13 +62,13 @@ def main():
     # Define plane in robot base
     origin, p1, p2 = positions
     x_axis = p1 - origin
-    y_axis = p2 - origin
-    normal = np.cross(x_axis, y_axis)
+    z_axis = np.cross(x_axis, p2 - origin)
+    y_axis = np.cross(z_axis, x_axis)
 
     x_axis = x_axis / np.linalg.norm(x_axis)
     y_axis = y_axis / np.linalg.norm(y_axis)
-    normal = normal / np.linalg.norm(normal)
-    T_base_wobj = SE3.Rt(np.array([x_axis, y_axis, normal]).T, origin, check=False)
+    z_axis = z_axis / np.linalg.norm(z_axis)
+    T_base_wobj = SE3.Rt(np.array([x_axis, y_axis, z_axis]).T, origin)
 
     # Transform to world frame
     T_world_wobj = T_world_base * T_base_wobj
