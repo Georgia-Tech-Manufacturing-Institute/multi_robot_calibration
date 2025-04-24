@@ -51,7 +51,7 @@ def tool_calibration(robot: Robot, configs: np.ndarray, initial: np.ndarray):
     res = minimize(
         cost,
         x0=initial,
-        method="BFGS",
+        method="Nelder-Mead",
         options={"fatol": 1e-12},
     )
     print(res)

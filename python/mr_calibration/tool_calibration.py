@@ -53,17 +53,24 @@ def main():
         default=os.path.join(script_path, "data/tool_calib_configs.csv"),
         help="The path to the csv file containing the calibration point clouds for each robot",
     )
+    parser.add_argument(
+        "-d",
+        "--deg",
+        default=False,
+        help="Pass this argument if the data is in degrees",
+    )
     args = parser.parse_args()
 
     # Read joint configurations
     qq = parse_data(args.joint_configs_path)
+    if args.deg:
+        qq = np.deg2rad(qq)
 
     # create robot
     robot = Robot(za6())
     robot.tool = SE3.Rx(np.pi) * SE3.Ry(np.pi / 2)
 
-    initial_guess = np.array([-0.087, 0.00087, 0.012]) * 1000  # mm
-    initial_guess = np.array([0.012, 0.00087, -0.087]) * 1000  # mm
+    initial_guess = np.array([0.024, 0.00186, -0.108117]) * 1000  # mm
     res = tool_calibration(robot, qq, initial_guess)
 
     np.set_printoptions(suppress=True, formatter={"float_kind": "{:0.6f}".format})
