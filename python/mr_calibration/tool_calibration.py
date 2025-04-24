@@ -56,8 +56,8 @@ def main():
     parser.add_argument(
         "-d",
         "--deg",
-        default=False,
         help="Pass this argument if the data is in degrees",
+        action=argparse.BooleanOptionalAction,
     )
     args = parser.parse_args()
 
