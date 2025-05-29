@@ -77,8 +77,9 @@ def main():
     print("============ Work Object Transformation ============")
     print(f"T_world_wobj:\n {T_world_wobj}")
 
-    print(f"translation (m): {T_world_wobj.t / 1000}")
+    print(f"translation (xyz): {T_world_wobj.t}")
     print(f"orientation (rpy): {T_world_wobj.rpy()}")
+    print("NOTE: Translation units match inputs")
 
 
 if __name__ == "__main__":
