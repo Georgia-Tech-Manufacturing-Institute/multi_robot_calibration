@@ -88,4 +88,4 @@ def create_new_world_frame(T_B1_B2: SE3):
     T_B1_W = SE3.Rt(np.column_stack((unit_x, unit_y, unit_z)), t_new_world)
     T_W_B1 = T_B1_W.inv()
 
-    return T_W_B1, T_W_B1 * T_B1_B2
+    return T_W_B1, T_W_B1 @ T_B1_B2

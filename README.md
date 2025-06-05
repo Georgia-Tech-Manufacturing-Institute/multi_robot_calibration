@@ -63,7 +63,7 @@ options:
 #### `calibrate-iterative`
 
 ```
-usage: calibrate-iterative [-h] [-r ROBOT_CLOUD_PATH] [-p | --plot | --no-plot]
+usage: calibrate-iterative [-h] [-r ROBOT_CLOUD_PATH] [-b BASE_FRAMES_PATH] [-o OUTPUT] [-p | --plot | --no-plot]
 
 Find world-to-robot transformations.
 
@@ -71,6 +71,10 @@ options:
   -h, --help            show this help message and exit
   -r ROBOT_CLOUD_PATH, --robot_cloud_path ROBOT_CLOUD_PATH
                         The path to the csv file containing the calibration point clouds for each robot
+  -b BASE_FRAMES_PATH, --base_frames_path BASE_FRAMES_PATH
+                        The path to the yaml file containing the previous base frame transformations
+  -o OUTPUT, --output OUTPUT
+                        Optional output filename for the modified base frames
   -p, --plot, --no-plot
 ```
 

@@ -14,8 +14,10 @@
 
 import os
 import argparse
+import yaml
 import numpy as np
 import pandas as pd
+from typing import Dict
 from spatialmath import SO3, SE3
 
 import matplotlib.pyplot as plt
@@ -73,6 +75,34 @@ def average_every_m_points(mat, M):
     return averaged_arr
 
 
+def yaml_to_transform(yaml_dict: Dict) -> SE3:
+    return SE3.Rt(
+        SO3.RPY([yaml_dict["roll"], yaml_dict["pitch"], yaml_dict["yaw"]]),
+        [yaml_dict["x"], yaml_dict["y"], yaml_dict["z"]],
+    )
+
+
+def transform_to_yaml(transform: SE3) -> Dict:
+    xyz = [float(x) for x in transform.t]
+    rpy = [float(x) for x in transform.rpy()]
+    return {
+        "x": xyz[0],
+        "y": xyz[1],
+        "z": xyz[2],
+        "roll": rpy[0],
+        "pitch": rpy[1],
+        "yaw": rpy[2],
+    }
+
+
+def get_default_output_path(input_path):
+    dir_name = os.path.dirname(input_path)
+    base_name = os.path.basename(input_path)
+    name, ext = os.path.splitext(base_name)
+    modified_name = f"{name}_modified{ext}"
+    return os.path.join(dir_name, modified_name)
+
+
 def main():
     script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -84,19 +114,29 @@ def main():
         default=os.path.join(script_path, "data/cubes.csv"),
         help="The path to the csv file containing the calibration point clouds for each robot",
     )
+    parser.add_argument(
+        "-b",
+        "--base_frames_path",
+        default=os.path.join(script_path, "data/base_frames.yaml"),
+        help="The path to the yaml file containing the previous base frame transformations",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Optional output filename for the modified base frames",
+    )
     parser.add_argument("-p", "--plot", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     # robot1 (W1), and robot2 (W2) point clouds
     W1, W2 = get_data(args.robot_cloud_path)
 
-    # Previous transformations
-    T_Wold1_base1 = SE3.Rt(
-        SO3.RPY([0.001234, -0.002402, -1.523872]), [0.0, 0.707012, 0.0]
-    )
-    T_Wold2_base2 = SE3.Rt(
-        SO3.RPY([0.001232, 0.004382, 1.544656]), [0.0, -0.707012, 0.0]
-    )
+    # read previous transformations
+    with open(args.base_frames_path, "r") as file:
+        frames = yaml.safe_load(file)
+
+    T_Wold1_base1 = yaml_to_transform(frames["rob1_base"])
+    T_Wold2_base2 = yaml_to_transform(frames["rob2_base"])
 
     T_Wold1_base1.t *= 1000  # mm
     T_Wold2_base2.t *= 1000  # mm
@@ -121,8 +161,8 @@ def main():
     T_Wold1_Wnew = T_Wold1_Wold2.interp1(0.5)
 
     # Updated baseframe locations
-    T_Wnew_base1 = T_Wold1_Wnew.inv() * T_Wold1_base1
-    T_Wnew_base2 = T_Wold1_Wnew.inv() * T_Wold1_Wold2 * T_Wold2_base2
+    T_Wnew_base1 = T_Wold1_Wnew.inv() @ T_Wold1_base1
+    T_Wnew_base2 = T_Wold1_Wnew.inv() @ T_Wold1_Wold2 @ T_Wold2_base2
 
     np.set_printoptions(suppress=True, formatter={"float_kind": "{:0.6f}".format})
     print("============ Base to World Transformations ============")
@@ -132,10 +172,26 @@ def main():
     print(f"T_world_base_rob1:\n {T_world_base_rob1}")
     print(f"T_world_base_rob2:\n {T_world_base_rob2}")
 
-    print(f"rob1 translation (m): {T_world_base_rob1.t / 1000}")
-    print(f"rob1 orientation (rpy): {T_world_base_rob1.rpy()}")
-    print(f"rob2 translation (m): {T_world_base_rob2.t / 1000}")
-    print(f"rob2 orientation (rpy): {T_world_base_rob2.rpy()}\n")
+    T_world_base_rob1.t /= 1000  # m
+    T_world_base_rob2.t /= 1000  # m
+
+    # Write updated frames to yaml
+    output_path = args.output or get_default_output_path(args.base_frames_path)
+    output = {
+        "rob1_base": transform_to_yaml(T_world_base_rob1),
+        "rob2_base": transform_to_yaml(T_world_base_rob2),
+    }
+
+    def float_representer(dumper, value):
+        text = f"{value:.6f}"
+        return dumper.represent_scalar("tag:yaml.org,2002:float", text)
+
+    yaml.add_representer(float, float_representer)
+
+    with open(output_path, "w") as outfile:
+        yaml.dump(output, outfile, sort_keys=False)
+
+    print(f"Updated base frame parameters output to: {output_path}")
 
     # plot
     if args.plot:
