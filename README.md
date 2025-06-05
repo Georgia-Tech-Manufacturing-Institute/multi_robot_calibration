@@ -94,7 +94,7 @@ options:
 #### `calibrate-wobj`
 
 ```
-usage: calibrate-wobj [-h] [-d DATA_PATH]
+usage: calibrate-wobj [-h] [-d DATA_PATH] [-o OUTPUT]
 
 Find the world-to-work_object transformation
 
@@ -102,6 +102,8 @@ options:
   -h, --help            show this help message and exit
   -d DATA_PATH, --data_path DATA_PATH
                         The path to the yaml file containing the work object calibration data
+  -o OUTPUT, --output OUTPUT
+                        Optional output filename for the wobj frame
 ```
 
 ## Testing

@@ -27,7 +27,8 @@ import yaml
 import argparse
 import numpy as np
 
-from spatialmath import SE3, SO3
+from spatialmath import SE3
+from mr_calibration.core.utilities import *
 
 
 def parse_data(data_path):
@@ -35,11 +36,14 @@ def parse_data(data_path):
         data = yaml.safe_load(file)
 
     positions = data.get("positions", [])
-    xyz = data["transformation"]["xyz"]
-    rpy = data["transformation"]["rpy"]
-
-    trans = SE3.Rt(SO3.RPY(*rpy), xyz)
+    trans = yaml_to_transform(data["transformation"])
     return np.array(positions), trans
+
+
+def get_default_output_path(input_path):
+    dir_name = os.path.dirname(input_path)
+    output_name = f"calibrated_wobj.yaml"
+    return os.path.join(dir_name, output_name)
 
 
 def main():
@@ -54,6 +58,11 @@ def main():
         "--data_path",
         default=os.path.join(script_path, "data/wobj_data.yaml"),
         help="The path to the yaml file containing the work object calibration data",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Optional output filename for the wobj frame",
     )
     args = parser.parse_args()
 
@@ -71,15 +80,23 @@ def main():
     T_base_wobj = SE3.Rt(np.array([x_axis, y_axis, z_axis]).T, origin)
 
     # Transform to world frame
-    T_world_wobj = T_world_base * T_base_wobj
+    T_world_wobj = T_world_base @ T_base_wobj
 
     np.set_printoptions(suppress=True, formatter={"float_kind": "{:0.6f}".format})
     print("============ Work Object Transformation ============")
     print(f"T_world_wobj:\n {T_world_wobj}")
 
-    print(f"translation (xyz): {T_world_wobj.t}")
-    print(f"orientation (rpy): {T_world_wobj.rpy()}")
-    print("NOTE: Translation units match inputs")
+    # Write updated wobj to yaml
+    output_path = args.output or get_default_output_path(args.data_path)
+    output = {
+        "work_object": transform_to_yaml(T_world_wobj),
+    }
+
+    yaml.add_representer(float, float_representer)
+    with open(output_path, "w") as outfile:
+        yaml.dump(output, outfile, sort_keys=False)
+
+    print(f"Updated base frame parameters output to: {output_path}")
 
 
 if __name__ == "__main__":

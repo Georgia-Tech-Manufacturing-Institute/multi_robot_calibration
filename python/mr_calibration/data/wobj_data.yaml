@@ -4,5 +4,9 @@ positions: # Probed points
   - [7.0, 0.0, 0.0] # y-axis
 
 transformation: # Robot in the world frame (T_world_rob)
-  xyz: [-2.0, -5.0, 0.0]
-  rpy: [0.0, 0.0, 1.570796]
+  x: -2.0
+  y: -5.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 1.570796
