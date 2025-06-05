@@ -132,6 +132,74 @@ def three_point_circle(a, b, c):
     return center, np.linalg.norm(a - center)
 
 
+def create_cuboid(l, w, h):
+    """
+    Create the 8 corner points of a 3D cuboid centered at the origin.
+
+    Parameters
+    ----------
+    l : float
+        Length of the cuboid along the x-axis.
+    w : float
+        Width of the cuboid along the y-axis.
+    h : float
+        Height of the cuboid along the z-axis.
+
+    Returns
+    -------
+    points : ndarray
+        An (8, 3) array containing the (x, y, z) coordinates of the cube's
+        corners. The cube is centered at the origin (0, 0, 0).
+    """
+    l2, w2, h2 = l / 2, w / 2, h / 2
+    points = np.array(
+        [
+            [l2, w2, h2],
+            [l2, -w2, h2],
+            [-l2, -w2, h2],
+            [-l2, w2, h2],
+            [-l2, w2, -h2],
+            [l2, w2, -h2],
+            [l2, -w2, -h2],
+            [-l2, -w2, -h2],
+        ]
+    )
+    return points
+
+
+def average_every_m_points(mat, M):
+    """
+    Averages every M consecutive rows in a 2D array of 3D points.
+
+    Parameters
+    ----------
+    mat : ndarray
+        A 2D NumPy array of shape (N, 3), where each row represents a 3D point.
+    M : int
+        The number of consecutive points to average. Must evenly divide N.
+
+    Returns
+    -------
+    ndarray
+        A 2D NumPy array of shape (N // M, 3), where each row is the mean of M
+        consecutive rows from the input.
+
+    Raises
+    ------
+    ValueError
+        If the number of rows N is not divisible by M.
+    """
+    N = mat.shape[0]
+    if N % M != 0:
+        raise ValueError(
+            f"The number of rows N must be divisible by M, but N = {N} and M = {M}"
+        )
+
+    reshaped_arr = mat.reshape(N // M, M, 3)
+    averaged_arr = reshaped_arr.mean(axis=1)
+    return averaged_arr
+
+
 def centroid(point_cloud):
     """Returns the centroid of a point cloud"""
     return np.mean(point_cloud, axis=0)

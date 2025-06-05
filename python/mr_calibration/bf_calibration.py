@@ -19,9 +19,9 @@ import argparse
 import matplotlib.pyplot as plt
 from spatialmath import SE3
 
-from mr_calibration.core import Robot
-from mr_calibration.core import ls_registration
-from mr_calibration.core import create_new_world_frame
+from mr_calibration.core import Robot, create_new_world_frame
+from mr_calibration.core.keyence_cmm import read_point_cloud
+from mr_calibration.core.geometry import *
 
 
 def za6():
@@ -37,21 +37,12 @@ def za6():
     )
 
 
-def parse_data(data_path):
-    """Returns averaged point cloud"""
-    data = pd.read_csv(data_path)
-    points_avg = data.groupby("Element Name")[
-        ["MX Coord.", "MY Coord.", "MZ Coord."]
-    ].mean()
-    return np.array(points_avg.values)
-
-
 def get_data(tool_cloud_path, robot_cloud_path):
     # Designed points in tool frame
-    V = parse_data(tool_cloud_path)
+    V = read_point_cloud(tool_cloud_path)
 
     # Robot Measurement Points, output of CMM
-    W = parse_data(robot_cloud_path)
+    W = read_point_cloud(robot_cloud_path)
     midpoint = len(W) // 2
     W1 = W[:midpoint]
     W2 = W[midpoint:]

@@ -16,83 +16,24 @@ import os
 import argparse
 import yaml
 import numpy as np
-import pandas as pd
-from typing import Dict
-from spatialmath import SO3, SE3
-
 import matplotlib.pyplot as plt
-from mr_calibration.core.geometry import ls_registration
+
 from mr_calibration.core import create_new_world_frame
+from mr_calibration.core.keyence_cmm import read_point_cloud
+from mr_calibration.core.geometry import *
+from mr_calibration.core.utilities import *
 
 POINTS_PER_CORNER = 6
 
 
-def parse_data(data_path):
-    """Returns averaged point cloud"""
-    data = pd.read_csv(data_path)
-    points_avg = data.groupby("Element Name")[
-        ["MX Coord.", "MY Coord.", "MZ Coord."]
-    ].mean()
-    return np.array(points_avg.values)
-
-
 def get_data(robot_cloud_path):
     # Robot Measurement Points, output of CMM
-    W = parse_data(robot_cloud_path)
+    W = read_point_cloud(robot_cloud_path)
     midpoint = len(W) // 2
     W1 = W[:midpoint]
     W2 = W[midpoint:]
 
     return (W1, W2)
-
-
-def create_cube(l, w, h):
-    l2, w2, h2 = l / 2, w / 2, h / 2
-    points = np.array(
-        [
-            [l2, w2, h2],
-            [l2, -w2, h2],
-            [-l2, -w2, h2],
-            [-l2, w2, h2],
-            [-l2, w2, -h2],
-            [l2, w2, -h2],
-            [l2, -w2, -h2],
-            [-l2, -w2, -h2],
-        ]
-    )
-    return points
-
-
-def average_every_m_points(mat, M):
-    N = mat.shape[0]
-    if N % M != 0:
-        raise ValueError(
-            f"The number of rows N must be divisible by M, but N = {N} and M = {M}"
-        )
-
-    reshaped_arr = mat.reshape(N // M, M, 3)
-    averaged_arr = reshaped_arr.mean(axis=1)
-    return averaged_arr
-
-
-def yaml_to_transform(yaml_dict: Dict) -> SE3:
-    return SE3.Rt(
-        SO3.RPY([yaml_dict["roll"], yaml_dict["pitch"], yaml_dict["yaw"]]),
-        [yaml_dict["x"], yaml_dict["y"], yaml_dict["z"]],
-    )
-
-
-def transform_to_yaml(transform: SE3) -> Dict:
-    xyz = [float(x) for x in transform.t]
-    rpy = [float(x) for x in transform.rpy()]
-    return {
-        "x": xyz[0],
-        "y": xyz[1],
-        "z": xyz[2],
-        "roll": rpy[0],
-        "pitch": rpy[1],
-        "yaw": rpy[2],
-    }
 
 
 def get_default_output_path(input_path):
@@ -150,7 +91,7 @@ def main():
     print(f"Point cloud sum error (mm) {np.sum(point_cloud_error)}\n")
 
     # Transformation between point clouds
-    points = create_cube(200, 200, 200) + np.array([0.0, 0.0, 200])
+    points = create_cuboid(200, 200, 200) + np.array([0.0, 0.0, 200])
     W1_avg = average_every_m_points(W1, 6)
     W2_avg = average_every_m_points(W2, 6)
 
@@ -182,12 +123,7 @@ def main():
         "rob2_base": transform_to_yaml(T_world_base_rob2),
     }
 
-    def float_representer(dumper, value):
-        text = f"{value:.6f}"
-        return dumper.represent_scalar("tag:yaml.org,2002:float", text)
-
     yaml.add_representer(float, float_representer)
-
     with open(output_path, "w") as outfile:
         yaml.dump(output, outfile, sort_keys=False)
 

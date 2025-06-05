@@ -15,6 +15,7 @@
 from .dh_robot import *
 from .geometry import *
 from .keyence_cmm import *
+from .utilities import *
 
 import numpy as np
 from spatialmath import SE3
