@@ -126,6 +126,11 @@ options:
   -q JOINT_CONFIGS_PATH, --joint_configs_path JOINT_CONFIGS_PATH
                         The path to the csv file containing the calibration point clouds for each robot
 ```
+##### AMPF Usage:
+
+Obtain an object that has a sharp-ish point and can be mounted/clamped to the work table. A cone shaped object is good for this. The terminating point should be less than 1mm in diameter. Mount the object securely to the work table. The tool which you wish to know the transformation of from the end effector to tool tip should be mounted on the end effector.
+
+Boot both robot arms and computers and launch Tormach PathPilot (Alternatively, use the custom pendant control softwware ros_jog). Jog the robot such that the tool tip is positioned right above the mounted spike's tip. Record the joint angles in a csv file. Job the tool away from the spike and change it's orientation as much as possible. Jog the tool tip back to the spike tip and record the joint angles to the csv file. Repeat this process 4-5 times for a total of 5-6 sets of joint angles. Run the `calibrate-tool` script on this csv file to obtain the transformation from the flange frame to the tool frame.
 
 #### `calibrate-wobj`
 
