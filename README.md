@@ -95,7 +95,7 @@ The following commands are required to put the arms into this usage mode. All co
 
 1. Run Roscore in the terminal on the host
 2. On each arm computer (after powering on and activating both arms):
-  1. cd ~/dev
+  A. cd ~/dev
   2. cd za_docker/
   3. ./tormach_ros_dev_container.sh -x
   4. cd ../
