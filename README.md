@@ -68,7 +68,6 @@ Turn on the scanner, the accompanying laptop, and the handheld probe. Start the 
 
 In the toolbar for the CMM software there will be an option to export scanned points list. The option that outputs all probed points in a csv format is desired. Place that file in the directory of your choosing, and run the python script with the proper path specified in the options.
 
-
 #### `calibrate-iterative`
 
 ```
@@ -86,6 +85,34 @@ options:
                         Optional output filename for the modified base frames
   -p, --plot, --no-plot
 ```
+##### AMPF Usage:
+
+Obtain the Coordinate Measuring Machine, and place it upon the tripod pedastal such that it is centered between the machines, and offset away from the base to base center line. The scanner should have equal line of sight to both end effectors. The handheld probe should be using the 5mm tip.
+
+This procedure involves probing the six empty bolt holes of the end effector of each arm at the 8 points that form a cube in working area of the arms. You will run a script on the Tormach control desktop that moves the arms through the points of the cube, with movement from one point to the next controlled by a user's input throught the keyboard. The first robot will walk throught the points, then the second robot will walk through the points. The goal is for the points that each arm targets to be the same points in space. This will not be the case during the first iteration, so 3-4 cycles of scanning and iterating are required.
+
+The following commands are required to put the arms into this usage mode. All commands should be run in the terminal of the specified computer. The three computers are the main host and the 2 arm computers.
+
+1. Run Roscore in the terminal on the host
+2. On each arm computer (after powering on and activating both arms):
+  1. cd ~/dev
+  2. cd za_docker/
+  3. ./tormach_ros_dev_container.sh -x
+  4. cd ../
+  5. cd ros_workspaces/
+  6. cd hydra
+  7. source  devel/setup.bash
+  8. roslaunch hydra_bringup hydra_robot.launch amr_id:=rob1 hardware:=hal sim:=false
+    1. For the first arm hardware:=rob1, for the second hardware:=rob2
+3. Return to host computer
+  1. Open a new terminal
+  2. "insert command to start the calibration script"
+4. Once the 6 empty bolt holes are scanned at a vertex of the cube, provide an input to the host computer to reach the next vertext, and repeat for each vertex and each arm
+5. You will end with 96 scanned point objects. 6 objects (boltholes) per vertex, 8 vertexes per cube, with 2 cubes. Refer to the previous section for directions on scanning points on the end effectors.
+6. Export the CSV point list and run the `calibrate-iterative` script upon it
+  1. The first initial base calibration frames should be found via the steps under the `calibrate-bf`
+7. Place the outputted frames in the proper locations on the robots
+8. Repeat until the errors are acceptable for your usecase. Generally 0.5mm-0.6mm of average error is good enough to stop.
 
 #### `calibrate-tool`
 
