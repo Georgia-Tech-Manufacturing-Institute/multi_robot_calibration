@@ -60,6 +60,16 @@ options:
   -p PLOT, --plot PLOT
 ```
 
+##### AMPF Usage:
+
+```
+Obtain the Coordinate Measuring Machine, and place it upon the tripod pedastal such that it is centered between the machines, and offset away from the base to base center line. The scanner should have equal line of sight to both end effectors. The Tormach Arms should both be positioned in the same orientation, using joint angles [0, 21, 45, 0, -66, 0]. The handheld probe should be using the 5mm tip.
+
+Turn on the scanner, the accompanying laptop, and the handheld probe. Start the CMM software and select the single points scanning mode. Select the "Point" option for scanning. You will be probing the unfilled bolt holes on the faces of each arm's end effector, starting with the top left and continuing clockwise until all 6 have been scanned. You will start with the right hand robot when observing the arms from the scanner's perspective. Touch the probe to the opening of the top left empty bolt hole (the light on the Scanner should be green. If orange/yellow is the only color to obtain the necessary scan, that is acceptable but less desireable) and pull the trigger. A sound will play indicating successful scan. Collect 3-4 data points per bolt hole before pressing done on the laptop. This will be "Point 1" in the list of scanned objects on the left of the CMM software. Repeat this process for the next 5 empty bolt holes on the first end effector, and then repeat the process on the second end effector.
+
+In the toolbar for the CMM software there will be an option to export scanned points list. The option that outputs all probed points in a csv format is desired. Place that file in the directory of your choosing, and run the python script with the proper path specified in the options.
+
+```
 #### `calibrate-iterative`
 
 ```
