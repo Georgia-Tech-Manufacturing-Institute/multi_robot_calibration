@@ -95,22 +95,22 @@ The following commands are required to put the arms into this usage mode. All co
 
 1. Run Roscore in the terminal on the host
 2. On each arm computer (after powering on and activating both arms):
-  * cd ~/dev
-  * cd za_docker/
-  * ./tormach_ros_dev_container.sh -x
-  * cd ../
-  * cd ros_workspaces/
-  * cd hydra
-  * source  devel/setup.bash
-  * roslaunch hydra_bringup hydra_robot.launch amr_id:=rob1 hardware:=hal sim:=false
-    + For the first arm hardware:=rob1, for the second hardware:=rob2
+    * cd ~/dev
+    * cd za_docker/
+    * ./tormach_ros_dev_container.sh -x
+    * cd ../
+    * cd ros_workspaces/
+    * cd hydra
+    * source  devel/setup.bash
+    * roslaunch hydra_bringup hydra_robot.launch amr_id:=rob1 hardware:=hal sim:=false
+        + For the first arm hardware:=rob1, for the second hardware:=rob2
 3. Return to host computer
-  * Open a new terminal
-  * "insert command to start the calibration script"
+    * Open a new terminal
+    * "insert command to start the calibration script"
 4. Once the 6 empty bolt holes are scanned at a vertex of the cube, provide an input to the host computer to reach the next vertext, and repeat for each vertex and each arm
 5. You will end with 96 scanned point objects. 6 objects (boltholes) per vertex, 8 vertexes per cube, with 2 cubes. Refer to the previous section for directions on scanning points on the end effectors.
 6. Export the CSV point list and run the `calibrate-iterative` script upon it
-  * The first initial base calibration frames should be found via the steps under the `calibrate-bf`
+    * The first initial base calibration frames should be found via the steps under the `calibrate-bf`
 7. Place the outputted frames in the proper locations on the robots
 8. Repeat until the errors are acceptable for your usecase. Generally 0.5mm-0.6mm of average error is good enough to stop.
 
