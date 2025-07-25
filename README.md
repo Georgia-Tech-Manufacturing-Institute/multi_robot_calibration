@@ -32,7 +32,7 @@ pytest
 ```
 
 ## Data Collection
-##### `calibrate-bf` AMPF Usage:
+#### `calibrate-bf` AMPF Usage:
 
 Obtain the Coordinate Measuring Machine, and place it upon the tripod pedastal such that it is centered between the machines, and offset away from the base to base center line. The scanner should have equal line of sight to both end effectors. The Tormach Arms should both be positioned in the same orientation, using joint angles [0, 21, 45, 0, -66, 0]. The handheld probe should be using the 5mm tip.
 
@@ -40,7 +40,7 @@ Turn on the scanner, the accompanying laptop, and the handheld probe. Start the 
 
 In the toolbar for the CMM software there will be an option to export scanned points list. The option that outputs all probed points in a csv format is desired. Place that file in the directory of your choosing, and run the python script with the proper path specified in the options.
 
-##### `calibrate-iterative` AMPF Usage:
+#### `calibrate-iterative` AMPF Usage:
 
 Obtain the Coordinate Measuring Machine, and place it upon the tripod pedastal such that it is centered between the machines, and offset away from the base to base center line. The scanner should have equal line of sight to both end effectors. The handheld probe should be using the 5mm tip.
 
@@ -59,7 +59,7 @@ The following commands are required to put the arms into this usage mode. All co
 6. Place the outputted frames in the proper locations on the robots
 7. Repeat until the errors are acceptable for your usecase. Generally 0.5mm-0.6mm of average error is good enough to stop.
 
-##### `calibrate-tool` AMPF Usage:
+#### `calibrate-tool` AMPF Usage:
 
 Obtain an object that has a sharp-ish point and can be mounted/clamped to the work table. A cone shaped object is good for this. The terminating point should be less than 1mm in diameter. Mount the object securely to the work table. The tool which you wish to know the transformation of from the end effector to tool tip should be mounted on the end effector.
 
