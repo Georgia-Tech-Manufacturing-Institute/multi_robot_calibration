@@ -32,7 +32,7 @@ pytest
 ```
 
 ## Data Collection
-### `calibrate-bf` AMPF Usage:
+##### `calibrate-bf` AMPF Usage:
 
 Obtain the Coordinate Measuring Machine, and place it upon the tripod pedastal such that it is centered between the machines, and offset away from the base to base center line. The scanner should have equal line of sight to both end effectors. The Tormach Arms should both be positioned in the same orientation, using joint angles [0, 21, 45, 0, -66, 0]. The handheld probe should be using the 5mm tip.
 
@@ -40,7 +40,7 @@ Turn on the scanner, the accompanying laptop, and the handheld probe. Start the 
 
 In the toolbar for the CMM software there will be an option to export scanned points list. The option that outputs all probed points in a csv format is desired. Place that file in the directory of your choosing, and run the python script with the proper path specified in the options.
 
-### `calibrate-iterative` AMPF Usage:
+##### `calibrate-iterative` AMPF Usage:
 
 Obtain the Coordinate Measuring Machine, and place it upon the tripod pedastal such that it is centered between the machines, and offset away from the base to base center line. The scanner should have equal line of sight to both end effectors. The handheld probe should be using the 5mm tip.
 
